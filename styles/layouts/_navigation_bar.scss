@@ -1,0 +1,79 @@
+.navbar{
+    &-container{
+        color:white;
+        background-color: darkslateblue;
+        width: 270px;
+        height: 100vh;
+        position: fixed;
+        overflow-y: scroll;
+        padding: 20px;
+        &::-webkit-scrollbar{
+            width: 8px;
+        }
+        &::-webkit-scrollbar-track{
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        &::-webkit-scrollbar-thumb{
+            border-radius: 10px;
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+        }
+    }
+    &-subtitle{
+        text-transform: uppercase;
+        opacity: .6;
+        margin-top: 1rem;
+        font-size: 13px;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+    &-item{
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        padding: 10px;
+        border-bottom: 1px solid #999;
+        transition: .2s;
+        & > div{
+            display: flex;
+            align-items: center;
+        }
+        &-icon{
+            margin-right:10px;
+            &-dropdown{
+                font-size: 13px;
+            }
+        }
+        &:hover{
+            background-color: whitesmoke;
+            color: black;
+        }
+    }
+    &-logo{
+        &-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+    &-subitem{
+        &-container{
+            transition: .2s;
+        }
+        &-item{
+            height: 100%;
+            display: flex;
+            padding: 5px;
+            margin: .5rem 1.5rem;
+            font-size: 14px;
+            align-items: center;
+            cursor: pointer;
+            transition: .2s;
+            &:hover{
+                background-color: whitesmoke;
+                color: black;
+            }
+        }
+    }
+}
