@@ -7,7 +7,7 @@ import { IconType } from 'react-icons/lib';
 interface SubItemContent{
     parentIcon: IconType;
     parentTitle: String;
-    subItems: {icon:IconType,title:String}[];
+    subItems: {icon:IconType,title:String,url:String}[];
     url: String
 }
 
@@ -46,8 +46,9 @@ const NavigationSubItemContainer = (props: SubItemContent) => {
                                 {
                                     subItems.map((item)=>{
                                         let {icon,title} = item;
+                                        let subUrl = item.url;
                                         return(
-                                            <NavigationItem icon={icon} title={title} url={url+"/"+title.toLowerCase()} isSubItem={true}/>
+                                            <NavigationItem icon={icon} title={title} url={url+"/"+subUrl} isSubItem={true}/>
                                         );
                                     })
                                 }

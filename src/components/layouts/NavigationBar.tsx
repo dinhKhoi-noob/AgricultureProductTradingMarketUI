@@ -1,5 +1,4 @@
-import appLogo from '../../../public/navigation-logo.jpg';
-import NavigationSubItemContainer from './navigation_bar/NavigationSubItemContainer'; '../layouts/navigation_bar/NavigationSubItemContainer';
+import NavigationSubItemContainer from './navigation_bar/NavigationSubItemContainer';
 import NavigationItem from './navigation_bar/NavigationItem';
 import { AiOutlineHome,AiOutlineLineChart } from "react-icons/ai";
 import { FiPieChart } from 'react-icons/fi';
@@ -16,27 +15,27 @@ const NavigationBar:React.FC = () =>
     {
         return (
             <div className="navbar-container">
-                <NavigationItem icon={AiOutlineHome} title="Dashboard" url="" isSubItem={false}/>
+                <NavigationItem icon={AiOutlineHome} title="Trang chủ" url="" isSubItem={false}/>
                 <div className="navbar-subcontainer">
                     <div className="navbar-subtitle">
                         Management
                     </div>
                     <NavigationSubItemContainer
                         parentIcon={FiPieChart}
-                        parentTitle='Analytics'
-                        subItems={[{icon:IoFastFoodOutline,title:'Dishes'},{icon:HiOutlineUserGroup,title:'Customers'}]}
-                        url="analytics"
+                        parentTitle='Yêu cầu'
+                        subItems={[{icon:IoFastFoodOutline,title:'Yêu cầu mua',url:"buying"},{icon:HiOutlineUserGroup,title:'Yêu cầu bán',url:"selling"}]}
+                        url="request"
                     />
                     <NavigationSubItemContainer
                         parentIcon={CgUserList}
-                        parentTitle='Employees'
-                        subItems={[{icon:ImUserTie,title:'Managers'},{icon:SiCodechef,title:'Chefs'}]}
+                        parentTitle='Tài khoản'
+                        subItems={[{icon:ImUserTie,title:'Người quản lý',url:"manager"},{icon:SiCodechef,title:'Nhà tiêu thụ',url:"consumer"},{icon:SiCodechef,title:'Nông dân',url:"farmer"},{icon:SiCodechef,title:'Nhân viên thu mua',url:"packing_employee"}]}
                         url="employees"
                     />
-                    <NavigationItem icon={HiUserGroup} title="Customers" url="customers" isSubItem={false}/>
-                    <NavigationItem icon={IoFastFoodOutline} title="Dishes" url="dishes" isSubItem={false}/>
-                    <NavigationItem icon={FaFileInvoiceDollar} title="Invoices" url="invoices" isSubItem={false}/>
-                    <NavigationItem icon={FaOpencart} title="Orders" url="orders" isSubItem={false}/>
+                    <NavigationItem icon={HiUserGroup} title="Loại nông sản" url="product_type" isSubItem={false}/>
+                    <NavigationItem icon={IoFastFoodOutline} title="Nông sản" url="product" isSubItem={false}/>
+                    <NavigationItem icon={FaFileInvoiceDollar} title="Đơn đặt hàng" url="order" isSubItem={false}/>
+                    <NavigationItem icon={FaOpencart} title="Báo cáo" url="report" isSubItem={false}/>
                 </div>
                 <div className="navbar-subcontainer">
                     <div className="navbar-subtitle">
@@ -44,8 +43,8 @@ const NavigationBar:React.FC = () =>
                     </div>
                     <NavigationSubItemContainer
                         parentIcon={RiShieldUserLine}
-                        parentTitle='Authentication'
-                        subItems={[{icon:FaRegUserCircle,title:'Profile'},{icon:GiEntryDoor,title:'Logout'}]}
+                        parentTitle='Người dùng'
+                        subItems={[{icon:FaRegUserCircle,title:'Hồ sơ',url:"profile"},{icon:GiEntryDoor,title:'Logout',url:""}]}
                         url="authentication"
                     />
                     <div className="navbar-item m-tb-1rem">
