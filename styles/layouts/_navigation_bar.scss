@@ -4,8 +4,8 @@
         background-color: darkslateblue;
         width: 270px;
         height: 100vh;
-        position: fixed;
         overflow-y: scroll;
+        position: fixed;
         padding: 20px;
         &::-webkit-scrollbar{
             width: 8px;

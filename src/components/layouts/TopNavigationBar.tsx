@@ -16,6 +16,7 @@ const TopNavigationBar = () => {
     return (
         <div className="top-navbar-container">
             <form className="top-navbar-search-area">
+                <button>Toggle</button>
                 <input type="text" className="top-navbar-search-input" placeholder="Type to search..."/>
                 <button type="submit" className="top-navbar-search-btn"><RiSearch2Line></RiSearch2Line></button>
             </form>

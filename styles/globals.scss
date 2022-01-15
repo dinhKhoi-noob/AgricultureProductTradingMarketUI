@@ -1,3 +1,4 @@
+@import './bootstrap.scss';
 @import './layouts/layout.scss';
 html,
 body {
@@ -14,4 +15,8 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+.page-wrapper{
+  padding: 90px 0 0 270px;
 }

@@ -13,7 +13,9 @@ const Layout = (props: Layout) => {
             <NavigationBar/>
             <div className="w-100-percent">
                 <TopNavigationBar/>
-                {props.children}
+                <div className="page-wrapper">
+                    {props.children}
+                </div>
             </div>
         </>
     )
