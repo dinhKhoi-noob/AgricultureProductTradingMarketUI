@@ -6,7 +6,7 @@ interface layoutReducerAction{
 }
 
 export interface layoutReducerState {
-    isToggleOnNavbar: boolean
+    isToggleOnNavbar: Boolean
 }
 
 export const layoutReducer = (state: layoutReducerState,action:layoutReducerAction) => {

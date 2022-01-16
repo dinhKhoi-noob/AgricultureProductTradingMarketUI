@@ -1,22 +1,28 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect, useContext } from 'react';
 import { FaRegUserCircle } from 'react-icons/fa';
 import { GiEntryDoor } from 'react-icons/gi'
 import { RiSearch2Line,RiNotification4Fill } from 'react-icons/ri';
 import { AiFillMessage } from 'react-icons/ai';
+import { RiMenuLine } from 'react-icons/ri';
 import { animated, Transition } from 'react-spring';
 import NotificationCard from './top_navigation_bar/NotificationCard';
 import MessageCard from './top_navigation_bar/MessageCard';
-
+import { LayoutContext } from '../../context/LayoutContext';
 
 const TopNavigationBar = () => {
-
+    const {changeToggleOnNavbarStatus} = useContext(LayoutContext);
     const [isToggleOnNotification,setIsToggleOnNotification] = useState(false);
     const [isToggleOnMessage,setIsToggleOnMessage] = useState(false);
     const [isToggleOnUser,setIsToggleOnUser] = useState(false);
     return (
-        <div className="top-navbar-container">
+        <>
             <form className="top-navbar-search-area">
-                <button>Toggle</button>
+                <div className="top-navbar-toggle-navbar-btn" onClick={(event)=>{
+                    event.preventDefault();
+                    changeToggleOnNavbarStatus();
+                }}>
+                    <RiMenuLine/>
+                </div>
                 <input type="text" className="top-navbar-search-input" placeholder="Type to search..."/>
                 <button type="submit" className="top-navbar-search-btn"><RiSearch2Line></RiSearch2Line></button>
             </form>
@@ -168,7 +174,7 @@ const TopNavigationBar = () => {
                     </Transition>
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 
