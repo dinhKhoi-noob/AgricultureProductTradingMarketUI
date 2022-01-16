@@ -11,6 +11,7 @@
         margin-left: 270px;
         justify-content: space-between;
         z-index: 100;
+        transition: .48s;
     }
     &-right-section{
         display: flex;
@@ -21,6 +22,7 @@
     &-search{
         &-area{
             display: flex;
+            align-items: center;
         }
         &-input{
             padding: 5px 20px;
@@ -38,7 +40,7 @@
             border:1px solid #999;
             border-left: none;
             cursor: pointer;
-            padding-right: 20px;
+            padding: 7px 10px;
             border-radius: 0 15px 15px 0;
         }
     }
@@ -155,5 +157,9 @@
             font-size: 15px;
             font-weight: bold;
         }
+    }
+    &-toggle-navbar-btn{
+        margin-right: 20px;
+        cursor: pointer;
     }
 }

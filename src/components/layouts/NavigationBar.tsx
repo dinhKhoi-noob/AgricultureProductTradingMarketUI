@@ -1,6 +1,8 @@
 import NavigationSubItemContainer from './navigation_bar/NavigationSubItemContainer';
 import NavigationItem from './navigation_bar/NavigationItem';
+import { LayoutContext } from '../../context/LayoutContext';
 import { AiOutlineHome,AiOutlineLineChart } from "react-icons/ai";
+import { BsArrowLeftCircleFill } from 'react-icons/bs';
 import { FiPieChart } from 'react-icons/fi';
 import { CgUserList } from 'react-icons/cg';
 import { ImUserTie } from 'react-icons/im';
@@ -10,11 +12,20 @@ import { RiShieldUserLine } from 'react-icons/ri';
 import { FaFileInvoiceDollar, FaOpencart, FaRegUserCircle } from 'react-icons/fa';
 import { GiEntryDoor } from 'react-icons/gi';
 import { IoFastFoodOutline } from 'react-icons/io5';
+import { useContext } from 'react';
 
 const NavigationBar:React.FC = () => 
     {
+        const {changeToggleOnNavbarStatus} = useContext(LayoutContext);
         return (
-            <div className="navbar-container">
+            <>
+                <div className="navbar-close-btn" onClick={
+                    ()=>{
+                        changeToggleOnNavbarStatus();
+                    }
+                }>
+                    <BsArrowLeftCircleFill/>
+                </div>
                 <NavigationItem icon={AiOutlineHome} title="Trang chủ" url="" isSubItem={false}/>
                 <div className="navbar-subcontainer">
                     <div className="navbar-subtitle">
@@ -56,7 +67,7 @@ const NavigationBar:React.FC = () =>
                         </div>
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 export default NavigationBar;
