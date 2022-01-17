@@ -10,10 +10,12 @@
         background-color: darkslateblue;
         width: 270px;
         height: 100vh;
+        left: -270px;
         overflow-y: scroll;
         position: fixed;
         padding: 20px;
         padding-right: 35px;
+        z-index: 51;
         &::-webkit-scrollbar{
             width: 8px;
         }

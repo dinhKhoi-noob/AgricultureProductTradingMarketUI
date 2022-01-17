@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useState } from 'react';
+import { useMediaQuery,useTheme } from '@mui/material';
 
 interface LayoutContextProviderProps{
     children: ReactNode
@@ -6,21 +7,30 @@ interface LayoutContextProviderProps{
 
 interface LayoutContextDefault {
     isToggleOnNavbar: Boolean;
-    changeToggleOnNavbarStatus: () => void
+    smMatched: Boolean,
+    mdMatched: Boolean,
+    changeToggleOnNavbarStatus: (status? :boolean) => void
 }
 
 export const LayoutContext = createContext<LayoutContextDefault>({
     isToggleOnNavbar: false,
+    smMatched: false,
+    mdMatched: false,
     changeToggleOnNavbarStatus: () => null
 })
 
 const LayoutContextProvider = ({children}: LayoutContextProviderProps) => {
+    const theme = useTheme();
+    const mdMatched = useMediaQuery(theme.breakpoints.up('md'));
+    const smMatched = useMediaQuery(theme.breakpoints.up('sm'));
     const [isToggleOnNavbar,setIsToggleOnNavbar] = useState(false);
-    const changeToggleOnNavbarStatus = () => {
-        setIsToggleOnNavbar(!isToggleOnNavbar);
+    const changeToggleOnNavbarStatus = (status? :boolean) => {
+        setIsToggleOnNavbar(status?status:!isToggleOnNavbar);
     }
     const layoutContextData = {
         isToggleOnNavbar,
+        mdMatched,
+        smMatched,
         changeToggleOnNavbarStatus
     }
     return (
