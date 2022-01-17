@@ -1,5 +1,5 @@
 import { ScriptProps } from 'next/script';
-import React, { useContext } from 'react';
+import React, { Children, useContext } from 'react';
 import NavigationBar from './NavigationBar';
 import TopNavigationBar from './TopNavigationBar';
 import { LayoutContext } from '../../context/LayoutContext';
@@ -10,7 +10,7 @@ interface Layout{
 }
 
 const Layout = (props: Layout) => {
-    const {isToggleOnNavbar} = useContext(LayoutContext);
+    const {isToggleOnNavbar,isOnLoginPage} = useContext(LayoutContext);
     const topNavbarScaleAnimation = useSpring({
         from:{
             width:"80%",
@@ -48,34 +48,41 @@ const Layout = (props: Layout) => {
         reset:true
     })
     return (
-        isToggleOnNavbar?
-        <>
-            <animated.div className="navbar-container" style={navbarNarrowAnimation}>
-                <NavigationBar/>
-            </animated.div>
-            <div className="w-100-percent">
-                <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
-                    <TopNavigationBar/>
+        !isOnLoginPage?
+        (
+            isToggleOnNavbar?
+            <>
+                <animated.div className="navbar-container" style={navbarNarrowAnimation}>
+                    <NavigationBar/>
                 </animated.div>
-                <animated.div className="page-wrapper" style={pageScaleAnimation}>
-                    {props.children}
+                <div className="w-100-percent">
+                    <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
+                        <TopNavigationBar/>
+                    </animated.div>
+                    <animated.div className="page-wrapper" style={pageScaleAnimation}>
+                        {props.children}
+                    </animated.div>
+                </div>
+            </>
+            :
+            <>
+                <animated.div className="navbar-container" style={navbarScaleAnimation}>
+                    <NavigationBar/>
                 </animated.div>
-            </div>
-        </>
+                <div className="w-100-percent">
+                    <animated.div className="top-navbar-container">
+                        <TopNavigationBar/>
+                    </animated.div>
+                    <animated.div className="page-wrapper">
+                        {props.children}
+                    </animated.div>
+                </div>
+            </>
+        )
         :
-        <>
-            <animated.div className="navbar-container" style={navbarScaleAnimation}>
-                <NavigationBar/>
-            </animated.div>
-            <div className="w-100-percent">
-                <animated.div className="top-navbar-container">
-                    <TopNavigationBar/>
-                </animated.div>
-                <animated.div className="page-wrapper">
-                    {props.children}
-                </animated.div>
-            </div>
-        </>
+        <div>
+            {props.children}
+        </div>
     )
 }
 

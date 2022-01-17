@@ -6,22 +6,35 @@ interface LayoutContextProviderProps{
 
 interface LayoutContextDefault {
     isToggleOnNavbar: Boolean;
-    changeToggleOnNavbarStatus: () => void
+    isOnLoginPage: Boolean;
+    changeOnLoginPageStatus:(status: boolean) => void;
+    changeToggleOnNavbarStatus: () => void;
+
 }
 
 export const LayoutContext = createContext<LayoutContextDefault>({
     isToggleOnNavbar: false,
+    isOnLoginPage: false,
+    changeOnLoginPageStatus:(status: boolean) => null,
     changeToggleOnNavbarStatus: () => null
 })
 
 const LayoutContextProvider = ({children}: LayoutContextProviderProps) => {
-    const [isToggleOnNavbar,setIsToggleOnNavbar] = useState(false);
+    const [isToggleOnNavbar, setIsToggleOnNavbar] = useState(false);
+    const [isOnLoginPage, setIsOnLoginPage] = useState(false);
+
+    const changeOnLoginPageStatus = (status: boolean) => {
+        setIsOnLoginPage(status)
+    }
+
     const changeToggleOnNavbarStatus = () => {
         setIsToggleOnNavbar(!isToggleOnNavbar);
     }
     const layoutContextData = {
         isToggleOnNavbar,
-        changeToggleOnNavbarStatus
+        isOnLoginPage,
+        changeToggleOnNavbarStatus,
+        changeOnLoginPageStatus
     }
     return (
         <LayoutContext.Provider value={layoutContextData}>

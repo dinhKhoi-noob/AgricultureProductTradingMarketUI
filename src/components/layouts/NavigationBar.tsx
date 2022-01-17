@@ -46,7 +46,7 @@ const NavigationBar:React.FC = () =>
                     <NavigationItem icon={HiUserGroup} title="Loại nông sản" url="product_type" isSubItem={false}/>
                     <NavigationItem icon={IoFastFoodOutline} title="Nông sản" url="product" isSubItem={false}/>
                     <NavigationItem icon={FaFileInvoiceDollar} title="Đơn đặt hàng" url="order" isSubItem={false}/>
-                    <NavigationItem icon={FaOpencart} title="Báo cáo" url="report" isSubItem={false}/>
+                    <NavigationItem icon={FaOpencart} title="Báo cáo" url="login" isSubItem={false}/>
                 </div>
                 <div className="navbar-subcontainer">
                     <div className="navbar-subtitle">
