@@ -20,4 +20,8 @@ a {
 .page-wrapper{
   padding: 90px 0 0 270px;
   transition: .48s;
+  &--responsive{
+    padding: 90px 0 0 0;
+  transition: .48s;
+  }
 }
