@@ -4,13 +4,14 @@ import NavigationBar from './NavigationBar';
 import TopNavigationBar from './TopNavigationBar';
 import { LayoutContext } from '../../context/LayoutContext';
 import { animated, useSpring } from 'react-spring';
+import { Container } from '@mui/material';
 
 interface Layout{
     children: ScriptProps
 }
 
 const Layout = (props: Layout) => {
-    const {isToggleOnNavbar,mdMatched,changeToggleOnNavbarStatus} = useContext(LayoutContext);
+    const {isToggleOnNavbar,mdMatched,isOnLoginPage,changeToggleOnNavbarStatus} = useContext(LayoutContext);
     useEffect(()=>{
         if(mdMatched){
             changeToggleOnNavbarStatus(false);
@@ -60,60 +61,67 @@ const Layout = (props: Layout) => {
         reset:true
     })
     return (
-        isToggleOnNavbar?
-        <>
-            <animated.div className="navbar-container" style={navbarNarrowAnimation}>
-                <NavigationBar/>
-            </animated.div>
-            {
-                mdMatched
-                ?
-                <div>
-                    <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
-                        <TopNavigationBar/>
-                    </animated.div>
-                    <animated.div className="page-wrapper" style={pageScaleAnimation}>
-                        {props.children}
-                    </animated.div>
-                </div>
-                :
-                <div>
-                    <div className="top-navbar-container top-navbar-container--responsive">
-                        <TopNavigationBar/>
+        !isOnLoginPage?
+        (
+            isToggleOnNavbar?
+            <>
+                <animated.div className="navbar-container" style={navbarNarrowAnimation}>
+                    <NavigationBar/>
+                </animated.div>
+                {
+                    mdMatched
+                    ?
+                    <div>
+                        <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
+                            <TopNavigationBar/>
+                        </animated.div>
+                        <animated.div className="page-wrapper" style={pageScaleAnimation}>
+                            {props.children}
+                        </animated.div>
                     </div>
-                    <div className="page-wrapper page-wrapper--responsive">
-                        {props.children}
+                    :
+                    <div>
+                        <div className="top-navbar-container top-navbar-container--responsive">
+                            <TopNavigationBar/>
+                        </div>
+                        <div className="page-wrapper page-wrapper--responsive">
+                            {props.children}
+                        </div>
                     </div>
-                </div>
-            }
-        </>
+                }
+            </>
+            :
+            <>
+                <animated.div className="navbar-container" style={navbarScaleAnimation}>
+                    <NavigationBar/>
+                </animated.div>
+                {
+                    mdMatched
+                    ?
+                    <div>
+                        <animated.div className="top-navbar-container">
+                            <TopNavigationBar/>
+                        </animated.div>
+                        <animated.div className="page-wrapper">
+                            {props.children}
+                        </animated.div>
+                    </div>
+                    :
+                    <div>
+                        <div className="top-navbar-container top-navbar-container--responsive">
+                            <TopNavigationBar/>
+                        </div>
+                        <div className="page-wrapper page-wrapper--responsive">
+                            {props.children}
+                        </div>
+                    </div>
+                }
+            </>
+        )
         :
-        <>
-            <animated.div className="navbar-container" style={navbarScaleAnimation}>
-                <NavigationBar/>
-            </animated.div>
-            {
-                mdMatched
-                ?
-                <div>
-                    <animated.div className="top-navbar-container">
-                        <TopNavigationBar/>
-                    </animated.div>
-                    <animated.div className="page-wrapper">
-                        {props.children}
-                    </animated.div>
-                </div>
-                :
-                <div>
-                    <div className="top-navbar-container top-navbar-container--responsive">
-                        <TopNavigationBar/>
-                    </div>
-                    <div className="page-wrapper page-wrapper--responsive">
-                        {props.children}
-                    </div>
-                </div>
-            }
-        </>
+        <Container>
+            {props.children}
+        </Container>
     )
 }
 
