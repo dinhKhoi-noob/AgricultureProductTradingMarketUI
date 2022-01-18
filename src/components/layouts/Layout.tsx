@@ -1,16 +1,29 @@
 import { ScriptProps } from 'next/script';
-import React, { Children, useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import NavigationBar from './NavigationBar';
 import TopNavigationBar from './TopNavigationBar';
 import { LayoutContext } from '../../context/LayoutContext';
 import { animated, useSpring } from 'react-spring';
+import { Container } from '@mui/material';
 
 interface Layout{
     children: ScriptProps
 }
 
 const Layout = (props: Layout) => {
-    const {isToggleOnNavbar,isOnLoginPage} = useContext(LayoutContext);
+    const {isToggleOnNavbar,mdMatched,isOnLoginPage,changeToggleOnNavbarStatus} = useContext(LayoutContext);
+    useEffect(()=>{
+        if(mdMatched){
+            changeToggleOnNavbarStatus(false);
+        }
+        else{
+            changeToggleOnNavbarStatus(true);
+        }
+        return ()=>{
+            changeToggleOnNavbarStatus(false);
+        }
+    },[mdMatched])
+
     const topNavbarScaleAnimation = useSpring({
         from:{
             width:"80%",
@@ -55,34 +68,60 @@ const Layout = (props: Layout) => {
                 <animated.div className="navbar-container" style={navbarNarrowAnimation}>
                     <NavigationBar/>
                 </animated.div>
-                <div className="w-100-percent">
-                    <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
-                        <TopNavigationBar/>
-                    </animated.div>
-                    <animated.div className="page-wrapper" style={pageScaleAnimation}>
-                        {props.children}
-                    </animated.div>
-                </div>
+                {
+                    mdMatched
+                    ?
+                    <div>
+                        <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
+                            <TopNavigationBar/>
+                        </animated.div>
+                        <animated.div className="page-wrapper" style={pageScaleAnimation}>
+                            {props.children}
+                        </animated.div>
+                    </div>
+                    :
+                    <div>
+                        <div className="top-navbar-container top-navbar-container--responsive">
+                            <TopNavigationBar/>
+                        </div>
+                        <div className="page-wrapper page-wrapper--responsive">
+                            {props.children}
+                        </div>
+                    </div>
+                }
             </>
             :
             <>
                 <animated.div className="navbar-container" style={navbarScaleAnimation}>
                     <NavigationBar/>
                 </animated.div>
-                <div className="w-100-percent">
-                    <animated.div className="top-navbar-container">
-                        <TopNavigationBar/>
-                    </animated.div>
-                    <animated.div className="page-wrapper">
-                        {props.children}
-                    </animated.div>
-                </div>
+                {
+                    mdMatched
+                    ?
+                    <div>
+                        <animated.div className="top-navbar-container">
+                            <TopNavigationBar/>
+                        </animated.div>
+                        <animated.div className="page-wrapper">
+                            {props.children}
+                        </animated.div>
+                    </div>
+                    :
+                    <div>
+                        <div className="top-navbar-container top-navbar-container--responsive">
+                            <TopNavigationBar/>
+                        </div>
+                        <div className="page-wrapper page-wrapper--responsive">
+                            {props.children}
+                        </div>
+                    </div>
+                }
             </>
         )
         :
-        <div>
+        <Container>
             {props.children}
-        </div>
+        </Container>
     )
 }
 

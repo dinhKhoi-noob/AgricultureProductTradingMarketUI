@@ -4,18 +4,52 @@ import { GiEntryDoor } from 'react-icons/gi'
 import { RiSearch2Line,RiNotification4Fill } from 'react-icons/ri';
 import { AiFillMessage } from 'react-icons/ai';
 import { RiMenuLine } from 'react-icons/ri';
-import { animated, Transition } from 'react-spring';
+import { animated, Transition, useSpring } from 'react-spring';
 import NotificationCard from './top_navigation_bar/NotificationCard';
 import MessageCard from './top_navigation_bar/MessageCard';
 import { LayoutContext } from '../../context/LayoutContext';
+import { FormGroup, TextField, Button } from '@mui/material'
 
 const TopNavigationBar = () => {
-    const {changeToggleOnNavbarStatus} = useContext(LayoutContext);
+    const {smMatched,changeToggleOnNavbarStatus} = useContext(LayoutContext);
+    const [isToggleOnSearchBtn,setIsToggleOnSearchBtn] = useState(false);
     const [isToggleOnNotification,setIsToggleOnNotification] = useState(false);
     const [isToggleOnMessage,setIsToggleOnMessage] = useState(false);
     const [isToggleOnUser,setIsToggleOnUser] = useState(false);
+    const searchInputSlideIn = useSpring({
+        from:{
+            maxWidth:"0px"
+        },
+        to:{
+            maxWidth:"165px"
+        },
+        reset:true
+    })
     return (
         <>
+            {
+                isToggleOnSearchBtn
+                ?
+                <div className="top-navbar__slide-in__section">
+                    <div className="top-navbar__slide-in__psudo" onClick={()=>{
+                        setIsToggleOnSearchBtn(false);
+                    }}></div>
+                    <form onSubmit={(event)=>{
+                        event.preventDefault();
+                        setIsToggleOnSearchBtn(false);
+                    }} className="top-navbar__slide-in__form">
+                        <animated.div style={searchInputSlideIn}>
+                            <input type="text" autoCorrect='off' autoComplete='off' placeholder='Type something to search...' className="top-navbar__slide-in__input" autoFocus/>
+                        </animated.div>
+                        <button className="top-navbar__slide-in__btn" type="submit">
+                            <RiSearch2Line/>
+                        </button>
+                    </form>
+                </div>
+                :
+                <>
+                </>
+            }
             <form className="top-navbar-search-area">
                 <div className="top-navbar-toggle-navbar-btn" onClick={(event)=>{
                     event.preventDefault();
@@ -23,8 +57,25 @@ const TopNavigationBar = () => {
                 }}>
                     <RiMenuLine/>
                 </div>
-                <input type="text" className="top-navbar-search-input" placeholder="Type to search..."/>
-                <button type="submit" className="top-navbar-search-btn"><RiSearch2Line></RiSearch2Line></button>
+                {
+                    smMatched?
+                    (
+                        <>
+                            <input type="text" className="top-navbar-search-input" placeholder="Type to search..."/>
+                            <button type="submit" className="top-navbar-search-btn"><RiSearch2Line></RiSearch2Line></button>
+                        </>
+                    ):
+                    (
+                        <>
+                            <button className="top-navbar-search-btn top-navbar-search-btn--rounded" onClick={(event)=>{
+                                event.preventDefault();
+                                setIsToggleOnSearchBtn(true);
+                            }}>
+                                <RiSearch2Line/>
+                            </button>
+                        </>
+                    )
+                }
             </form>
             <div className="top-navbar-right-section">
                 <div className="wrapper pos-relative">

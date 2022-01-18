@@ -21,9 +21,8 @@ a {
 .page-wrapper{
   padding: 90px 0 0 270px;
   transition: .48s;
-}
-
-.form-input{
-  padding: 10px;
-  
+  &--responsive{
+    padding: 90px 0 0 0;
+  transition: .48s;
+  }
 }
