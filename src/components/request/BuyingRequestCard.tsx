@@ -1,8 +1,9 @@
-import { Box, Button, CircularProgress, Container, Grid, LinearProgress, Modal, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Grid, LinearProgress, Tooltip, Typography } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import Image from 'next/image';
 import NoUserImage from '../../../public/assets/no_user.jpg';
 import { LayoutContext } from '../../context/LayoutContext';
+import { BuyingRequestContext } from '../../context/BuyingRequestContext';
 
 interface UserSellingSuccessInfor{
     id: String;
@@ -31,12 +32,8 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
     const { postBy,thumbnail,title,user,quantity,progress,price } = props;
     const quantityRatio = (progress / quantity) * 100;
     const {xsMatched,mdMatched,smMatched} = useContext(LayoutContext);
+    const {changeIsOpenModalStatus} = useContext(BuyingRequestContext);
     const [fontSize,setFontSize] = useState(16);
-    const [isOnpendModal,setIsOpenedModal] = useState(false);
-    
-    const toggleOpenModal = (status: boolean) => {
-        setIsOpenedModal(status);
-    }
 
     useEffect(()=>{
         console.log(mdMatched,smMatched,xsMatched);
@@ -59,21 +56,6 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
     
     return (
         <>
-            <Modal
-                open={isOnpendModal}
-                onClose={()=>{
-                    toggleOpenModal(false)
-                }}
-                aria-labelledby="unstyled-modal-title"
-                aria-describedby="unstyled-modal-description"
-            >
-                <Box width={200} height={200} position="absolute" left="50%" top="50%" style={{backgroundColor:"white",transform:"translate(-50%,-50%)"}}>
-                    <Box display="flex">
-                        <Button variant='outlined' color="success">Đăng ký</Button>
-                        <Button variant='outlined' color="warning">Hủy</Button>
-                    </Box>
-                </Box>
-            </Modal>
             <Grid container justifyContent="space-between" alignItems="center" mb={1} mt={1}>
                 <Grid item xs={0} sm={0} md={2} lg={2} xl={2}>
                     <Image src={NoUserImage} width={80} height={80}></Image>
@@ -101,9 +83,7 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
                     <Typography>
                         {progress}/{quantity}
                     </Typography>
-                    <React.Fragment>
-                        <LinearProgress variant="determinate" value={quantityRatio} style={{width:"80%"}}/>
-                    </React.Fragment>
+                    <LinearProgress variant="determinate" value={quantityRatio} style={{width:"80%"}}/>
                 </Grid>
                 <Grid item xs={12} sm={12} md={2} lg={2} xl={2}>
                     <Box mb={2}/>
@@ -111,7 +91,7 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
                         variant='contained'
                         color="secondary"
                         fullWidth={xsMatched?true:false} style={{fontSize}}
-                        onClick={()=>{toggleOpenModal(true)}}
+                        onClick={()=>{changeIsOpenModalStatus(true)}}
                     >
                         Đăng ký mua
                     </Button>
