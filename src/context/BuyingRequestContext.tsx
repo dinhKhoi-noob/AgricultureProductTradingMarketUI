@@ -4,13 +4,15 @@ interface BuyingRequestProps{
     children: ReactNode
 }
 
-interface SelledUserProps{
+export interface SelledUserProps{
+    id: string;
     username: string;
     avatar: string;
     quantity: number;
 }
 
-interface OwnerProps{
+export interface OwnerProps{
+    id: string;
     username: string;
     avatar: string;
 }
@@ -18,6 +20,7 @@ interface OwnerProps{
 interface ModalProps{
     owner: OwnerProps;
     quantity: number;
+    process: number;
     title: string;
     price: number;
     selledUser: SelledUserProps[];
@@ -25,23 +28,27 @@ interface ModalProps{
 
 interface BuyingRequestProviderProps{
     isOpenedModal: boolean;
+    modalInformation: ModalProps;
     changeIsOpenModalStatus: (status:boolean) => void;
-    modalInformation: ModalProps
+    changeModalInformation: (information:ModalProps) => void;
 }
 
 const BuyingRequestContextDefault = {
     isOpenedModal: false,
-    changeIsOpenModalStatus: () => null,
     modalInformation: {
         owner:{
             username: "",
-            avatar: ""
+            avatar: "",
+            id:""
         },
         quantity: 0,
+        process: 0,
         title: "",
         price: 0,
         selledUser: []
-    }
+    },
+    changeIsOpenModalStatus: () => null,
+    changeModalInformation: ()=> null
 }
 
 export const BuyingRequestContext = createContext<BuyingRequestProviderProps>(BuyingRequestContextDefault);
@@ -49,16 +56,28 @@ export const BuyingRequestContext = createContext<BuyingRequestProviderProps>(Bu
 const BuyingRequestContextProvider = ({children}:BuyingRequestProps) => {
 
     const [isOpenedModal, setIsOpenedModal] = useState(false);
-    const [modalInformation,setModalInformation] = useState({
+    const [modalInformation,setModalInformation] = useState<ModalProps>({
         owner:{
+            id:"",
             username: "",
             avatar: ""
         },
         quantity: 0,
+        process:0,
         title: "",
         price: 0,
         selledUser: []
     })
+    const changeModalInformation = (information: ModalProps) => {
+        setModalInformation({
+            owner: information.owner,
+            quantity: information.quantity,
+            title: information.title,
+            price: information.price,
+            process: information.process,
+            selledUser: information.selledUser
+        });
+    }
     const changeIsOpenModalStatus = (status: boolean) => {
         setIsOpenedModal(status);
     }
@@ -66,7 +85,8 @@ const BuyingRequestContextProvider = ({children}:BuyingRequestProps) => {
     const BuyingRequestContextData = {
         isOpenedModal,
         modalInformation,
-        changeIsOpenModalStatus
+        changeIsOpenModalStatus,
+        changeModalInformation
     }
 
     return (
