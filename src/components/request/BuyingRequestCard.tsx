@@ -4,36 +4,41 @@ import Image from 'next/image';
 import NoUserImage from '../../../public/assets/no_user.jpg';
 import { LayoutContext } from '../../context/LayoutContext';
 import { BuyingRequestContext } from '../../context/BuyingRequestContext';
-
-interface UserSellingSuccessInfor{
-    id: String;
-    avatar: String;
-    username: String;
-    quantity: Number;
-}
-
-interface OwnerInfor{
-    id: String;
-    avatar: String;
-    username: String;
-}
+import { SelledUserProps,OwnerProps } from '../../context/BuyingRequestContext';
 
 interface BuyingRequestCardProps {
     thumbnail: String;
-    title: String;
+    title: string;
     quantity: number;
     progress: number;
-    postBy: OwnerInfor;
-    user: UserSellingSuccessInfor [];
-    price:String;
+    postBy: OwnerProps;
+    user: SelledUserProps [];
+    price: number;
 }
 
 const BuyingRequestCard = (props: BuyingRequestCardProps) => {
     const { postBy,thumbnail,title,user,quantity,progress,price } = props;
     const quantityRatio = (progress / quantity) * 100;
     const {xsMatched,mdMatched,smMatched} = useContext(LayoutContext);
-    const {changeIsOpenModalStatus} = useContext(BuyingRequestContext);
+    const {changeIsOpenModalStatus,changeModalInformation} = useContext(BuyingRequestContext);
     const [fontSize,setFontSize] = useState(16);
+
+    const handleOnToggleModal = () => {
+        const modalInformation = {
+            owner:{
+                username: postBy.username,
+                avatar: postBy.avatar,
+                id: postBy.id
+            },
+            quantity: quantity,
+            process: progress,
+            title: title,
+            price: price,
+            selledUser:user
+        }
+        changeIsOpenModalStatus(true);
+        changeModalInformation(modalInformation);
+    }
 
     useEffect(()=>{
         console.log(mdMatched,smMatched,xsMatched);
@@ -80,7 +85,7 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
                     </Typography>
                 </Grid>
                 <Grid item xs={2} sm={2} md={2} lg={2} xl={2}>
-                    <Typography>
+                    <Typography fontSize={fontSize}>
                         {progress}/{quantity}
                     </Typography>
                     <LinearProgress variant="determinate" value={quantityRatio} style={{width:"80%"}}/>
@@ -91,7 +96,7 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
                         variant='contained'
                         color="secondary"
                         fullWidth={xsMatched?true:false} style={{fontSize}}
-                        onClick={()=>{changeIsOpenModalStatus(true)}}
+                        onClick={()=>{handleOnToggleModal()}}
                     >
                         Đăng ký mua
                     </Button>
