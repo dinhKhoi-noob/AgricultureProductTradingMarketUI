@@ -1,9 +1,10 @@
+/* eslint-disable no-undef */
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  images: {
-    domains: ['http://localhost:4000']
-  }
-}
+    reactStrictMode: true,
+    images: {
+        domains: ["http://localhost:4000"],
+    },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

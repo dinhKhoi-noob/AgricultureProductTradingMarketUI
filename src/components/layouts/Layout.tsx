@@ -1,128 +1,114 @@
-import { ScriptProps } from 'next/script';
-import React, { useContext, useEffect } from 'react';
-import NavigationBar from './NavigationBar';
-import TopNavigationBar from './TopNavigationBar';
-import { LayoutContext } from '../../context/LayoutContext';
-import { animated, useSpring } from 'react-spring';
-import { Container } from '@mui/material';
+import { ScriptProps } from "next/script";
+import React, { useContext, useEffect } from "react";
+import NavigationBar from "./NavigationBar";
+import TopNavigationBar from "./TopNavigationBar";
+import { LayoutContext } from "../../context/LayoutContext";
+import { animated, useSpring } from "react-spring";
+import { Container } from "@mui/material";
 
-interface Layout{
-    children: ScriptProps
+interface Layout {
+    children: ScriptProps;
 }
 
+// eslint-disable-next-line no-redeclare
 const Layout = (props: Layout) => {
-    const {isToggleOnNavbar,mdMatched,isOnLoginPage,changeToggleOnNavbarStatus} = useContext(LayoutContext);
-    useEffect(()=>{
-        if(mdMatched){
+    const { isToggleOnNavbar, mdMatched, isOnLoginPage, changeToggleOnNavbarStatus } = useContext(LayoutContext);
+    useEffect(() => {
+        if (mdMatched) {
             changeToggleOnNavbarStatus(false);
-        }
-        else{
+        } else {
             changeToggleOnNavbarStatus(true);
         }
-        return ()=>{
+        return () => {
             changeToggleOnNavbarStatus(false);
-        }
-    },[mdMatched])
+        };
+    }, [mdMatched]);
 
     const topNavbarScaleAnimation = useSpring({
-        from:{
-            width:"80%",
-            marginLeft:"270px"
+        from: {
+            width: "80%",
+            marginLeft: "270px",
         },
-        to:{
-            width:"100%",
-            marginLeft:"0"
-        }
-    })
+        to: {
+            width: "100%",
+            marginLeft: "0",
+        },
+    });
     const pageScaleAnimation = useSpring({
-        from:{
-            padding:"90px 0 0 270px"
+        from: {
+            padding: "90px 0 0 270px",
         },
-        to:{
-            padding:"90px 0 0 0"
-        }
-    })
+        to: {
+            padding: "90px 0 0 0",
+        },
+    });
     const navbarNarrowAnimation = useSpring({
-        from:{
-            left:"0"
+        from: {
+            left: "0",
         },
-        to:{
-            left:"-270px"
+        to: {
+            left: "-270px",
         },
-        reset:true,
-    })
+        reset: true,
+    });
     const navbarScaleAnimation = useSpring({
-        from:{
-            left:"-270px"
+        from: {
+            left: "-270px",
         },
-        to:{
-            left:"0"
+        to: {
+            left: "0",
         },
-        reset:true
-    })
-    return (
-        !isOnLoginPage?
-        (
-            isToggleOnNavbar?
+        reset: true,
+    });
+    return !isOnLoginPage ? (
+        isToggleOnNavbar ? (
             <>
                 <animated.div className="navbar-container" style={navbarNarrowAnimation}>
-                    <NavigationBar/>
+                    <NavigationBar />
                 </animated.div>
-                {
-                    mdMatched
-                    ?
+                {mdMatched ? (
                     <div>
                         <animated.div className="top-navbar-container" style={topNavbarScaleAnimation}>
-                            <TopNavigationBar/>
+                            <TopNavigationBar />
                         </animated.div>
                         <animated.div className="page-wrapper" style={pageScaleAnimation}>
                             {props.children}
                         </animated.div>
                     </div>
-                    :
+                ) : (
                     <div>
                         <div className="top-navbar-container top-navbar-container--responsive">
-                            <TopNavigationBar/>
+                            <TopNavigationBar />
                         </div>
-                        <div className="page-wrapper page-wrapper--responsive">
-                            {props.children}
-                        </div>
+                        <div className="page-wrapper page-wrapper--responsive">{props.children}</div>
                     </div>
-                }
+                )}
             </>
-            :
+        ) : (
             <>
                 <animated.div className="navbar-container" style={navbarScaleAnimation}>
-                    <NavigationBar/>
+                    <NavigationBar />
                 </animated.div>
-                {
-                    mdMatched
-                    ?
+                {mdMatched ? (
                     <div>
                         <animated.div className="top-navbar-container">
-                            <TopNavigationBar/>
+                            <TopNavigationBar />
                         </animated.div>
-                        <animated.div className="page-wrapper">
-                            {props.children}
-                        </animated.div>
+                        <animated.div className="page-wrapper">{props.children}</animated.div>
                     </div>
-                    :
+                ) : (
                     <div>
                         <div className="top-navbar-container top-navbar-container--responsive">
-                            <TopNavigationBar/>
+                            <TopNavigationBar />
                         </div>
-                        <div className="page-wrapper page-wrapper--responsive">
-                            {props.children}
-                        </div>
+                        <div className="page-wrapper page-wrapper--responsive">{props.children}</div>
                     </div>
-                }
+                )}
             </>
         )
-        :
-        <Container>
-            {props.children}
-        </Container>
-    )
-}
+    ) : (
+        <Container>{props.children}</Container>
+    );
+};
 
-export default Layout
+export default Layout;

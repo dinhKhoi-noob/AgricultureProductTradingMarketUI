@@ -1,23 +1,23 @@
-import React, { createContext, ReactNode, useState } from 'react';
+import React, { createContext, ReactNode, useState } from "react";
 
-interface BuyingRequestProps{
-    children: ReactNode
+interface BuyingRequestProps {
+    children: ReactNode;
 }
 
-export interface SelledUserProps{
+export interface SelledUserProps {
     id: string;
     username: string;
     avatar: string;
     quantity: number;
 }
 
-export interface OwnerProps{
+export interface OwnerProps {
     id: string;
     username: string;
     avatar: string;
 }
 
-interface ModalProps{
+interface ModalProps {
     owner: OwnerProps;
     quantity: number;
     process: number;
@@ -26,48 +26,52 @@ interface ModalProps{
     selledUser: SelledUserProps[];
 }
 
-interface BuyingRequestProviderProps{
+interface BuyingRequestProviderProps {
     isOpenedModal: boolean;
+    isBeginSlide: boolean;
     modalInformation: ModalProps;
-    changeIsOpenModalStatus: (status:boolean) => void;
-    changeModalInformation: (information:ModalProps) => void;
+    changeIsOpenModalStatus: (status: boolean) => void;
+    setIsBeginSlide: (status: boolean) => void;
+    changeModalInformation: (information: ModalProps) => void;
 }
 
 const BuyingRequestContextDefault = {
     isOpenedModal: false,
+    isBeginSlide: false,
     modalInformation: {
-        owner:{
+        owner: {
             username: "",
             avatar: "",
-            id:""
+            id: "",
         },
         quantity: 0,
         process: 0,
         title: "",
         price: 0,
-        selledUser: []
+        selledUser: [],
     },
+    setIsBeginSlide: () => null,
     changeIsOpenModalStatus: () => null,
-    changeModalInformation: ()=> null
-}
+    changeModalInformation: () => null,
+};
 
 export const BuyingRequestContext = createContext<BuyingRequestProviderProps>(BuyingRequestContextDefault);
 
-const BuyingRequestContextProvider = ({children}:BuyingRequestProps) => {
-
+const BuyingRequestContextProvider = ({ children }: BuyingRequestProps) => {
     const [isOpenedModal, setIsOpenedModal] = useState(false);
-    const [modalInformation,setModalInformation] = useState<ModalProps>({
-        owner:{
-            id:"",
+    const [isBeginSlide, setIsBeginSlide] = useState(true);
+    const [modalInformation, setModalInformation] = useState<ModalProps>({
+        owner: {
+            id: "",
             username: "",
-            avatar: ""
+            avatar: "",
         },
         quantity: 0,
-        process:0,
+        process: 0,
         title: "",
         price: 0,
-        selledUser: []
-    })
+        selledUser: [],
+    });
     const changeModalInformation = (information: ModalProps) => {
         setModalInformation({
             owner: information.owner,
@@ -75,25 +79,26 @@ const BuyingRequestContextProvider = ({children}:BuyingRequestProps) => {
             title: information.title,
             price: information.price,
             process: information.process,
-            selledUser: information.selledUser
+            selledUser: information.selledUser,
         });
-    }
+    };
     const changeIsOpenModalStatus = (status: boolean) => {
         setIsOpenedModal(status);
-    }
+        setTimeout(() => {
+            setIsBeginSlide(false);
+        }, 1000);
+    };
 
     const BuyingRequestContextData = {
         isOpenedModal,
+        isBeginSlide,
         modalInformation,
         changeIsOpenModalStatus,
-        changeModalInformation
-    }
+        setIsBeginSlide,
+        changeModalInformation,
+    };
 
-    return (
-        <BuyingRequestContext.Provider value={BuyingRequestContextData}>
-            {children}
-        </BuyingRequestContext.Provider>
-    );
+    return <BuyingRequestContext.Provider value={BuyingRequestContextData}>{children}</BuyingRequestContext.Provider>;
 };
 
 export default BuyingRequestContextProvider;

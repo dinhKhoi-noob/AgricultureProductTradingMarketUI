@@ -1,5 +1,5 @@
-.top-navbar{
-    &-container{
+.top-navbar {
+    &-container {
         padding: 1.2rem 2rem;
         display: flex;
         align-items: center;
@@ -11,41 +11,41 @@
         margin-left: 270px;
         justify-content: space-between;
         z-index: 50;
-        transition: .48s;
-        &--responsive{
+        transition: 0.48s;
+        &--responsive {
             margin-left: 0;
             width: 100%;
         }
     }
-    &-right-section{
+    &-right-section {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 150px;
     }
-    &__slide-in{
-        &__section{
+    &__slide-in {
+        &__section {
             position: fixed;
             z-index: 10;
         }
-        &__psudo{
+        &__psudo {
             content: "";
             width: 100vw;
             height: 100vh;
             background-color: black;
             position: fixed;
-            top:0;
+            top: 0;
             right: 0;
             bottom: 0;
             left: 0;
             opacity: 0.2;
             z-index: 0;
         }
-        &__form{
+        &__form {
             display: flex;
         }
-        &__input{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        &__input {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             background-color: white;
             z-index: 10;
             position: relative;
@@ -56,65 +56,65 @@
             font-size: 14px;
             box-shadow: 0 0 3px 0 white;
             width: 100%;
-            &:focus{
+            &:focus {
                 outline: none;
             }
         }
-        &__btn{
+        &__btn {
             z-index: 20;
             position: relative;
             background-color: white;
-            border:1px solid white;
+            border: 1px solid white;
             box-shadow: 0 0 3px 0 white;
             border-radius: 0 10px 10px 0;
             padding-right: 10px;
         }
     }
-    &-search{
-        &-area{
+    &-search {
+        &-area {
             display: flex;
             align-items: center;
         }
-        &-input{
+        &-input {
             padding: 5px 20px;
-            border:1px solid #999;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border: 1px solid #999;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             border-right: none;
             font-size: 15px;
             border-radius: 15px 0 0 15px;
-            &:focus{
+            &:focus {
                 outline: none;
             }
         }
-        &-btn{
+        &-btn {
             background-color: transparent;
-            border:1px solid #999;
+            border: 1px solid #999;
             border-left: none;
             cursor: pointer;
             padding: 7px 10px;
             border-radius: 0 15px 15px 0;
-            &--rounded{
+            &--rounded {
                 border-radius: 15px;
-                border:none;
+                border: none;
             }
         }
     }
-    &-notification{
-        &-btn{
-            opacity: .5;
+    &-notification {
+        &-btn {
+            opacity: 0.5;
             cursor: pointer;
         }
-        &-section{
+        &-section {
             display: flex;
         }
-        &-announcement{
+        &-announcement {
             border: 3px solid red;
             position: relative;
             right: 5px;
             border-radius: 50%;
             height: 0;
         }
-        &-container{
+        &-container {
             z-index: 100;
             height: 450px;
             background-color: white;
@@ -123,61 +123,61 @@
             width: 300px;
             left: 50%;
             transform: translateX(-50%);
-            padding: .5rem 1rem;
+            padding: 0.5rem 1rem;
             color: #555;
             border-radius: 5px;
             overflow-y: auto;
-            &::-webkit-scrollbar{
+            &::-webkit-scrollbar {
                 width: 6px;
             }
-            &::-webkit-scrollbar-track{
+            &::-webkit-scrollbar-track {
                 -webkit-box-shadow: inset 0 0 6px #999;
                 border-radius: 10px;
             }
-            &::-webkit-scrollbar-thumb{
+            &::-webkit-scrollbar-thumb {
                 border-radius: 10px;
                 -webkit-box-shadow: inset 0 0 6px #888;
-            }   
+            }
         }
-        &-tag{
-            &-container{
+        &-tag {
+            &-container {
                 margin: 10px 0;
                 display: flex;
             }
-            &-item{
+            &-item {
                 margin-right: 5px;
                 padding: 4px 8px;
                 border: 1px solid #555;
                 border-radius: 20px;
-                transition: .2s;
+                transition: 0.2s;
                 cursor: pointer;
-                &:hover{
+                &:hover {
                     background-color: #eee;
                 }
             }
         }
     }
-    &-user{
-        &-section{
+    &-user {
+        &-section {
             display: flex;
             flex-direction: column;
-            align-items:center;
+            align-items: center;
             position: relative;
             justify-content: center;
         }
-        &-avatar{
-            background-image: url('../../public/assets/no_user.jpg');
+        &-avatar {
+            background-image: url("../../public/assets/no_user.jpg");
             width: 30px;
             height: 30px;
             background-size: cover;
             background-position: center;
             border-radius: 50%;
         }
-        &-username{
+        &-username {
             font-size: 14px;
         }
-        &-dropdown{
-            &-container{
+        &-dropdown {
+            &-container {
                 z-index: 100;
                 background-color: white;
                 box-shadow: 0 0 2px 0;
@@ -185,35 +185,35 @@
                 width: 100px;
                 left: 50%;
                 top: 50%;
-                padding:3px;
+                padding: 3px;
                 padding-top: 5px;
-                transform: translate(-50%,22%);
+                transform: translate(-50%, 22%);
                 color: #555;
                 border-radius: 5px;
             }
-            &-tag{
+            &-tag {
                 display: flex;
                 padding: 10px;
                 justify-content: space-between;
                 cursor: pointer;
-                transition: .2s;
-                &:hover{
+                transition: 0.2s;
+                &:hover {
                     background-color: #eee;
                 }
             }
         }
     }
-    &-section{
-        &-title{
+    &-section {
+        &-title {
             font-size: 20px;
             font-weight: bold;
         }
-        &-subtitle{
+        &-subtitle {
             font-size: 15px;
             font-weight: bold;
         }
     }
-    &-toggle-navbar-btn{
+    &-toggle-navbar-btn {
         margin-right: 20px;
         cursor: pointer;
     }

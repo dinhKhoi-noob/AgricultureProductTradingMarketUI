@@ -1,14 +1,12 @@
-import { Button } from '@mui/material'
-import React from 'react'
+import { Button } from "@mui/material";
+import React from "react";
 
 const Order = () => {
     return (
         <div>
-            <Button variant='outlined'>
-                Hello World
-            </Button>
+            <Button variant="outlined">Hello World</Button>
         </div>
-    )
-}
+    );
+};
 
-export default Order
+export default Order;

@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const Consumer = () => {
-    return (
-        <div>
-            
-        </div>
-    )
-}
+    return <div></div>;
+};
 
-export default Consumer
+export default Consumer;

@@ -1,37 +1,53 @@
-@import './bootstrap.scss';
-@import './layouts/layout.scss';
-@import './login/login_page.scss';
+@import "./bootstrap.scss";
+@import "./layouts/layout.scss";
+@import "./login/login_page.scss";
 html,
 body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,
+        Helvetica Neue, sans-serif;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-.page-wrapper{
-  padding: 90px 0 0 270px;
-  transition: .48s;
-  &--responsive{
-    padding: 90px 0 0 0;
-  transition: .48s;
-  }
+.page-wrapper {
+    padding: 90px 0 0 270px;
+    transition: 0.48s;
+    &--responsive {
+        padding: 90px 0 0 0;
+        transition: 0.48s;
+    }
 }
 
-.modal{
-  width: 360px;
-  position:absolute;
-  padding:16px;
-  left: 50%;
-  background-color:white;
-  transform: translate(-50%,-50%);
+.modal {
+    width: 360px;
+    position: absolute;
+    padding: 16px;
+    left: 50%;
+    background-color: white;
+    transform: translate(-50%, -50%);
+    max-height: 600px;
+}
+
+.scrollable {
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+    }
 }
