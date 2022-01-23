@@ -1,23 +1,23 @@
 import { layoutActionType } from "../constant/types";
 
-interface layoutReducerAction{
+interface layoutReducerAction {
     type: layoutActionType;
     payload: Boolean;
 }
 
 export interface layoutReducerState {
-    isToggleOnNavbar: Boolean
+    isToggleOnNavbar: Boolean;
 }
 
-export const layoutReducer = (state: layoutReducerState,action:layoutReducerAction) => {
-    const {type, payload} = action
-    switch(type){
+export const layoutReducer = (state: layoutReducerState, action: layoutReducerAction) => {
+    const { type, payload } = action;
+    switch (type) {
         case layoutActionType.TOGGLE_ON_NAVBAR:
-            return{
+            return {
                 ...state,
-                isToggleOnNavbar: payload
-            }
+                isToggleOnNavbar: payload,
+            };
         default:
             return state;
     }
-}
+};

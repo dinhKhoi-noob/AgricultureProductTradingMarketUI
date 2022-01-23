@@ -1,3 +1,4 @@
 export enum layoutActionType {
-    TOGGLE_ON_NAVBAR = 'TOGGLE_ON_NAVBAR'
+    // eslint-disable-next-line no-unused-vars
+    TOGGLE_ON_NAVBAR = "TOGGLE_ON_NAVBAR",
 }
