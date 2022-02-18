@@ -20,7 +20,7 @@ const Login = () => {
     }, []);
     return (
         <div>
-            <Grid container padding={3} pl={8} pr={8}>
+            <Grid padding={3} pl={8} pr={8}>
                 <Grid item sm={12} md={6} xl={6}>
                     <Image src={loginImage} />
                 </Grid>
