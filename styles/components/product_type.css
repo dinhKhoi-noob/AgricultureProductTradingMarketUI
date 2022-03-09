@@ -1,0 +1,14 @@
+.product-type-modal {
+  width: 400px;
+  max-height: 600px;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  outline: none;
+  background-color: #eee;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+/*# sourceMappingURL=product_type.css.map */

@@ -1,0 +1,38 @@
+.login-page__container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 70vw;
+  height: 80vh;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  -webkit-box-shadow: 0 0 2px 0;
+          box-shadow: 0 0 2px 0;
+}
+
+.login-page__thumbnail {
+  width: 55%;
+}
+
+.login-page__content {
+  width: 45%;
+}
+
+.login-page__title {
+  text-align: center;
+  color: darkslateblue;
+}
+
+.login-page__input {
+  padding: 10px;
+  width: 100%;
+}
+
+.login-page__form__group {
+  width: 100%;
+  margin: 20px 0;
+}
+/*# sourceMappingURL=login_page.css.map */

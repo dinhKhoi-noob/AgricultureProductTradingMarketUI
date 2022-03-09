@@ -1,0 +1,94 @@
+.justify-space-between {
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.m-tb-2rem {
+  margin: 2rem 0;
+}
+
+.m-tb-1rem {
+  margin: 1rem 0;
+}
+
+.m-all-1rem {
+  margin: 1rem;
+}
+
+.min-h-6rem {
+  min-height: 6rem;
+}
+
+.flex-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.p-3rem {
+  padding: 3rem;
+}
+
+.p-t-3px {
+  padding-top: 3px;
+}
+
+.w-100-percent {
+  width: 100%;
+}
+
+.w-40-percent {
+  width: 40%;
+}
+
+.w-60-percent {
+  width: 60%;
+}
+
+.pos-relative {
+  position: relative;
+}
+
+.centralized-element {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+}
+
+.m-r-1rem {
+  margin-right: 1rem;
+}
+
+.bg-delivered {
+  background-color: #00cd62;
+  color: white;
+}
+
+.bg-progress {
+  background-color: #14b8a6;
+  color: white;
+}
+
+.bg-refunded {
+  background-color: #d14343;
+  color: white;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.top-50 {
+  top: 50%;
+}
+
+.central {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+/*# sourceMappingURL=bootstrap.css.map */
