@@ -1,6 +1,7 @@
 import React from "react";
 import type { NextPage } from "next";
-import {} from "@mui/material";
+// import { AuthContext } from "../src/context/AuthContext";
+// import { LayoutContext } from "../src/context/LayoutContext";
 
 const Home: NextPage = () => {
     return <></>;

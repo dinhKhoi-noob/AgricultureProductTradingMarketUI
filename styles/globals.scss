@@ -1,6 +1,7 @@
 @import "./bootstrap.scss";
 @import "./layouts/layout.scss";
 @import "./login/login_page.scss";
+@import "./components/product_type.scss";
 html,
 body {
     padding: 0;
@@ -28,6 +29,8 @@ a {
 }
 
 .modal {
+    outline: none;
+    box-shadow: none;
     width: 360px;
     position: absolute;
     padding: 16px;

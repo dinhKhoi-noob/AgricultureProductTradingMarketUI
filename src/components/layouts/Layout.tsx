@@ -1,29 +1,85 @@
 import { ScriptProps } from "next/script";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import NavigationBar from "./NavigationBar";
 import TopNavigationBar from "./TopNavigationBar";
 import { LayoutContext } from "../../context/LayoutContext";
 import { animated, useSpring } from "react-spring";
 import { Container } from "@mui/material";
+import Snackbar from "./Snackbar";
+import { AuthContext } from "../../context/AuthContext";
+import { useRouter } from "next/router";
 
-interface Layout {
+interface LayoutProps {
     children: ScriptProps;
 }
 
 // eslint-disable-next-line no-redeclare
-const Layout = (props: Layout) => {
-    const { isToggleOnNavbar, mdMatched, isOnLoginPage, changeToggleOnNavbarStatus } = useContext(LayoutContext);
+const Layout = (props: LayoutProps) => {
+    const [isDatedCookie, setIsDatedCookie] = useState(false);
+    const router = useRouter();
+    const { checkCookie } = useContext(AuthContext);
+    const checkLoginStatus = () => {
+        const currentPath = router.pathname;
+        const isLoggedIn = checkCookie();
+        if (!isLoggedIn && currentPath === "/") {
+            changeSnackbarValues({
+                content: "You're not logged in or your cookie is now expired, please login to continue",
+                type: "error",
+                isToggle: true,
+            });
+            setIsDatedCookie(true);
+            return;
+        }
+        if (currentPath === "/") {
+            changeSnackbarValues({
+                content: "Welcome back!",
+                type: "info",
+                isToggle: true,
+            });
+        }
+    };
+    const {
+        isToggleOnNavbar,
+        mdMatched,
+        isOnLoginPage,
+        snackbarValues,
+        snackbarPosition,
+        changeToggleOnNavbarStatus,
+        changeSnackbarValues,
+        changeSnackbarPosition,
+        changeSnackbarStatus,
+    } = useContext(LayoutContext);
+    const { content, isToggle, type } = snackbarValues;
+    const checkLoginStatusInterval = setInterval(() => {
+        checkLoginStatus();
+    }, 360000);
+    useEffect(() => {
+        checkLoginStatus();
+        if (snackbarValues.isToggle) {
+            changeSnackbarStatus(false);
+        }
+        return () => {
+            changeSnackbarStatus(false);
+        };
+    }, []);
     useEffect(() => {
         if (mdMatched) {
             changeToggleOnNavbarStatus(false);
+            changeSnackbarPosition({ ...snackbarPosition, vertical: "top" });
         } else {
             changeToggleOnNavbarStatus(true);
+            changeSnackbarPosition({ ...snackbarPosition, vertical: "bottom" });
         }
         return () => {
             changeToggleOnNavbarStatus(false);
+            changeSnackbarPosition({ ...snackbarPosition, vertical: "top" });
         };
     }, [mdMatched]);
-
+    useEffect(() => {
+        if (isDatedCookie) {
+            clearInterval(checkLoginStatusInterval);
+        }
+    }, [isDatedCookie]);
     const topNavbarScaleAnimation = useSpring({
         from: {
             width: "80%",
@@ -49,7 +105,7 @@ const Layout = (props: Layout) => {
         to: {
             left: "-270px",
         },
-        reset: true,
+        // reset: true,
     });
     const navbarScaleAnimation = useSpring({
         from: {
@@ -58,7 +114,7 @@ const Layout = (props: Layout) => {
         to: {
             left: "0",
         },
-        reset: true,
+        // reset: true,
     });
     return !isOnLoginPage ? (
         isToggleOnNavbar ? (
@@ -72,6 +128,7 @@ const Layout = (props: Layout) => {
                             <TopNavigationBar />
                         </animated.div>
                         <animated.div className="page-wrapper" style={pageScaleAnimation}>
+                            <Snackbar type={type} content={content} isToggle={isToggle} />
                             {props.children}
                         </animated.div>
                     </div>
@@ -80,7 +137,10 @@ const Layout = (props: Layout) => {
                         <div className="top-navbar-container top-navbar-container--responsive">
                             <TopNavigationBar />
                         </div>
-                        <div className="page-wrapper page-wrapper--responsive">{props.children}</div>
+                        <div className="page-wrapper page-wrapper--responsive">
+                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            {props.children}
+                        </div>
                     </div>
                 )}
             </>
@@ -94,20 +154,29 @@ const Layout = (props: Layout) => {
                         <animated.div className="top-navbar-container">
                             <TopNavigationBar />
                         </animated.div>
-                        <animated.div className="page-wrapper">{props.children}</animated.div>
+                        <animated.div className="page-wrapper">
+                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            {props.children}
+                        </animated.div>
                     </div>
                 ) : (
                     <div>
                         <div className="top-navbar-container top-navbar-container--responsive">
                             <TopNavigationBar />
                         </div>
-                        <div className="page-wrapper page-wrapper--responsive">{props.children}</div>
+                        <div className="page-wrapper page-wrapper--responsive">
+                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            {props.children}
+                        </div>
                     </div>
                 )}
             </>
         )
     ) : (
-        <Container>{props.children}</Container>
+        <Container>
+            <Snackbar type={type} content={content} isToggle={isToggle} />
+            {props.children}
+        </Container>
     );
 };
 
