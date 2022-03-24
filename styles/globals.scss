@@ -54,3 +54,26 @@ a {
         -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
     }
 }
+
+.chat-button {
+    min-width: 20px;
+    text-align: center;
+    &:hover {
+        background-color: white;
+    }
+}
+
+.profile-avatar {
+    border-radius: 50%;
+}
+
+.camera-icon {
+    position: relative;
+    left: -72px;
+    background-color: white;
+    font-size: 32px;
+    border: 1px solid white;
+    border-radius: 50%;
+    padding: 4px;
+    cursor: pointer;
+}

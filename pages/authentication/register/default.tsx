@@ -7,95 +7,64 @@ import { AiFillGoogleCircle } from "react-icons/ai";
 import { LayoutContext } from "../../../src/context/LayoutContext";
 import loginImage from "../../../public/assets/login-image.svg";
 import Image from "next/image";
-import {
-    Button,
-    FormControl,
-    FormControlLabel,
-    FormLabel,
-    Grid,
-    Input,
-    Radio,
-    RadioGroup,
-    Typography,
-} from "@mui/material";
+import { Button, FormLabel, Grid, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { AuthContext } from "../../../src/context/AuthContext";
-
-type InputFieldType = "username" | "password" | "phone" | "retypePassword";
-type AccountType = "provider" | "consummer";
+import { ProductTypeContext } from "../../../src/context/ProductTypeContext";
+import AdditionalInformation from "../../../src/components/auth/AdditionalInformation";
+import { useRouter } from "next/router";
 
 export interface RegisterUserType {
     username: string;
     password: string;
     phone: string;
     address: string;
-    accountType: AccountType;
+    email: string;
 }
 
 const Register = () => {
+    const router = useRouter();
     const [passwordRetype, setRetypePassword] = useState("");
-    const [currentUser, setCurrentUser] = useState<RegisterUserType>({
-        username: "",
-        password: "",
-        phone: "",
-        address: "",
-        accountType: "provider",
-    });
-
+    const { interestList, getCategoryList } = useContext(ProductTypeContext);
     const { changeOnLoginPageStatus, changeSnackbarValues } = useContext(LayoutContext);
     const {
         registerUser,
         getCityNameApi,
-        renderAddressSelector,
-        changeAddressLineOne,
         changeWarningStatus,
-        cities,
+        changeCurrentUserInformation,
+        isLoggedIn,
         warningStatus,
-        districtSelection,
-        wardSelection,
-        userAddress,
+        currentUser,
     } = useContext(AuthContext);
-    const { username, password, phone, accountType } = currentUser;
+    const { username, password, phone, email } = currentUser;
     useEffect(() => {
+        const loginStatus = isLoggedIn();
+        if (loginStatus) {
+            router.push("/");
+        }
         getCityNameApi();
+        getCategoryList();
         changeOnLoginPageStatus(true);
         return () => {
             changeOnLoginPageStatus(false);
         };
     }, []);
 
-    const changeAccountType = (event: SyntheticEvent) => {
+    const retypePassword = (event: SyntheticEvent) => {
         const target = event.target as HTMLInputElement;
-        const value = target.value;
-        const type = value === "consummer" ? "consummer" : "provider";
-        setCurrentUser({ ...currentUser, accountType: type });
-    };
-
-    const changeCurrentUserInformation = (event: SyntheticEvent, inputFieldType: InputFieldType) => {
-        const target = event.target as HTMLInputElement;
-        const value = target?.value;
-        switch (inputFieldType) {
-            case "password":
-                setCurrentUser({ ...currentUser, password: value });
-                break;
-            case "phone":
-                setCurrentUser({ ...currentUser, phone: value });
-                break;
-            case "username":
-                setCurrentUser({ ...currentUser, username: value });
-                break;
-            case "retypePassword":
-                setRetypePassword(value);
-                break;
-            default:
-                return;
-        }
+        setRetypePassword(target.value);
     };
 
     const checkPhoneNumber = () => {
         const regexPhone = /^((\+)84|0)[1-9](\d{2}){4}$/;
         const isValidPhone = regexPhone.test(phone);
-        return isValidPhone ? true : false;
+        return isValidPhone;
+    };
+
+    const checkValidEmail = () => {
+        const regexEmail = /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/;
+        const isValidEmail = regexEmail.test(email);
+        return isValidEmail;
     };
 
     const checkPassword = () => {
@@ -118,6 +87,7 @@ const Register = () => {
         event.preventDefault();
         const passwordStatus = checkPassword();
         const phoneStatus = checkPhoneNumber();
+        const emailStatus = checkValidEmail();
         if (!phoneStatus) {
             changeWarningStatus("phone", true);
             changeSnackbarValues({
@@ -132,7 +102,11 @@ const Register = () => {
             changeSnackbarValues({ content: passwordStatus.content, type: "error", isToggle: true });
             return;
         }
-        registerUser(currentUser);
+        if (!emailStatus) {
+            changeWarningStatus("email", true);
+            changeSnackbarValues({ content: "Email không hợp lệ", type: "error", isToggle: true });
+        }
+        registerUser(currentUser, interestList);
     };
 
     return (
@@ -151,8 +125,9 @@ const Register = () => {
                         }}
                     >
                         <FormLabel htmlFor="register-username" children={<Typography>Tên tài khoản</Typography>} />
-                        <Input
+                        <TextField
                             id="register-username"
+                            helperText="Tên người dùng phải dài tối thiểu 1 ký tự và phải là duy nhất"
                             fullWidth
                             value={username}
                             error={warningStatus.username}
@@ -167,9 +142,10 @@ const Register = () => {
                             children={<Typography>Mật khẩu</Typography>}
                             autoCorrect="off"
                         />
-                        <Input
+                        <TextField
                             id="register-password"
                             type="password"
+                            helperText="Mật khẩu phải dài tối thiểu 8 ký tự và chứa ít nhất 1 chữ cái viết thường, 1 chữ cái viết hoa và 1 số"
                             fullWidth
                             error={warningStatus.password}
                             value={password}
@@ -183,75 +159,32 @@ const Register = () => {
                             htmlFor="register-confirm-password"
                             children={<Typography>Xác nhận mật khẩu</Typography>}
                         />
-                        <Input
+                        <TextField
                             id="register-confirm-password"
                             type="password"
+                            helperText="Mật khẩu phải trùng khớp"
                             fullWidth
                             error={warningStatus.retypePassword}
                             value={passwordRetype}
                             onChange={event => {
-                                changeCurrentUserInformation(event, "retypePassword");
+                                retypePassword(event);
+                            }}
+                        />
+                        <Box mt={2}></Box>
+                        <FormLabel htmlFor="register-email" children={<Typography>Email</Typography>} />
+                        <TextField
+                            id="register-email"
+                            fullWidth
+                            helperText="Ví dụ: nguyenvana@test.com"
+                            value={email}
+                            error={warningStatus.email}
+                            onChange={event => {
+                                changeCurrentUserInformation(event, "email");
                             }}
                         />
                         <Box mt={1}></Box>
                         <br />
-                        <FormLabel htmlFor="register-phone" children={<Typography>Số điện thoại</Typography>} />
-                        <Input
-                            id="register-phone"
-                            fullWidth
-                            value={phone}
-                            error={warningStatus.phone}
-                            onChange={event => {
-                                changeCurrentUserInformation(event, "phone");
-                            }}
-                        />
-                        <br />
-                        <Box mt={2}></Box>
-                        <FormControl>
-                            <FormLabel id="demo-radio-buttons-group-label">Bạn là: </FormLabel>
-                            <RadioGroup
-                                aria-labelledby="demo-radio-buttons-group-label"
-                                name="radio-buttons-group"
-                                value={accountType}
-                                onChange={event => changeAccountType(event)}
-                            >
-                                <FormControlLabel value="provider" control={<Radio />} label="Nhà cung cấp nông sản" />
-                                <FormControlLabel value="consummer" control={<Radio />} label="Nhà tiêu thụ nông sản" />
-                            </RadioGroup>
-                        </FormControl>
-                        <Box mt={3}></Box>
-                        <Typography>Địa chỉ liên lạc:</Typography>
-                        <Box mt={3}></Box>
-                        {renderAddressSelector("city", cities)}
-                        <Box mt={3}></Box>
-                        {renderAddressSelector("district", districtSelection)}
-                        <Box mt={3}></Box>
-                        {renderAddressSelector("ward", wardSelection)}
-                        <Box mt={3}></Box>
-                        <FormLabel
-                            htmlFor="register-address"
-                            children={<Typography>Tên Đường / Tổ / Khu phố:</Typography>}
-                        />
-                        <Input
-                            id="register-address"
-                            fullWidth
-                            error={warningStatus.street}
-                            value={userAddress.street}
-                            onChange={event => {
-                                changeAddressLineOne(event, "street");
-                            }}
-                        />
-                        <Box mt={3}></Box>
-                        <FormLabel htmlFor="register-level" children={<Typography>Số nhà:</Typography>} />
-                        <Input
-                            id="register-level"
-                            fullWidth
-                            error={warningStatus.level}
-                            value={userAddress.level}
-                            onChange={event => {
-                                changeAddressLineOne(event, "level");
-                            }}
-                        />
+                        <AdditionalInformation />
                         <Box mt={3}></Box>
                         <Typography textAlign="center" fontSize={15}>
                             Hoặc sử dụng tài khoản khác
@@ -260,12 +193,12 @@ const Register = () => {
                         <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
                             <Grid item md={5.8} sm={12} xs={12}>
                                 <Button variant="contained" color="secondary" startIcon={<FaFacebook />} fullWidth>
-                                    <a href={process.env.REACT_APP_DEV_SERVER_URL}>Đăng ký với Facebook</a>
+                                    <a href="http://localhost:4000/api/user/page/facebook">Đăng ký với Facebook</a>
                                 </Button>
                             </Grid>
                             <Grid item md={5.8} sm={12} xs={12}>
                                 <Button variant="contained" color="error" startIcon={<AiFillGoogleCircle />} fullWidth>
-                                    <a href="https://facebook.com">Đăng ký với Google</a>
+                                    <a href="http://localhost:4000/api/user/page/google">Đăng ký với Google</a>
                                 </Button>
                             </Grid>
                         </Grid>

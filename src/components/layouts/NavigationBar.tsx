@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import NavigationSubItemContainer from "./navigation_bar/NavigationSubItemContainer";
 import NavigationItem from "./navigation_bar/NavigationItem";
 import { LayoutContext } from "../../context/LayoutContext";
@@ -14,9 +14,14 @@ import { FaFileInvoiceDollar, FaOpencart, FaRegUserCircle } from "react-icons/fa
 import { GiEntryDoor } from "react-icons/gi";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 const NavigationBar: React.FC = () => {
+    const { userRole, getCurrenUserRole } = useContext(AuthContext);
     const { changeToggleOnNavbarStatus } = useContext(LayoutContext);
+    useEffect(() => {
+        getCurrenUserRole();
+    }, []);
     return (
         <>
             <div
@@ -39,21 +44,41 @@ const NavigationBar: React.FC = () => {
                     ]}
                     url="request"
                 />
-                <NavigationSubItemContainer
-                    parentIcon={CgUserList}
-                    parentTitle="Tài khoản"
-                    subItems={[
-                        { icon: ImUserTie, title: "Người quản lý", url: "manager" },
-                        { icon: SiCodechef, title: "Nhà tiêu thụ", url: "consumer" },
-                        { icon: SiCodechef, title: "Nông dân", url: "farmer" },
-                        { icon: SiCodechef, title: "Nhân viên thu mua", url: "packing_employee" },
-                    ]}
-                    url="employees"
-                />
-                <NavigationItem icon={HiUserGroup} title="Loại nông sản" url="product_type" isSubItem={false} />
-                <NavigationItem icon={IoFastFoodOutline} title="Nông sản" url="product" isSubItem={false} />
-                <NavigationItem icon={FaFileInvoiceDollar} title="Đơn đặt hàng" url="order" isSubItem={false} />
-                <NavigationItem icon={FaOpencart} title="Báo cáo" url="authentication/login" isSubItem={false} />
+                {userRole === "system_manager" ? (
+                    <NavigationSubItemContainer
+                        parentIcon={CgUserList}
+                        parentTitle="Tài khoản"
+                        subItems={[
+                            { icon: ImUserTie, title: "Người quản lý", url: "manager" },
+                            { icon: SiCodechef, title: "Nhà tiêu thụ", url: "consumer" },
+                            { icon: SiCodechef, title: "Nông dân", url: "farmer" },
+                            { icon: SiCodechef, title: "Nhân viên thu mua", url: "packing_employee" },
+                        ]}
+                        url="employees"
+                    />
+                ) : (
+                    <></>
+                )}
+                {userRole === "manager" ? (
+                    <NavigationItem icon={HiUserGroup} title="Loại nông sản" url="product_type" isSubItem={false} />
+                ) : (
+                    <></>
+                )}
+                {userRole === "manager" ? (
+                    <NavigationItem icon={IoFastFoodOutline} title="Nông sản" url="product" isSubItem={false} />
+                ) : (
+                    <></>
+                )}
+                {userRole === "manager" || userRole === "packing_staff" || userRole === "shipper" ? (
+                    <NavigationItem icon={FaFileInvoiceDollar} title="Đơn đặt hàng" url="order" isSubItem={false} />
+                ) : (
+                    <></>
+                )}
+                {userRole === "manager" ? (
+                    <NavigationItem icon={FaOpencart} title="Báo cáo" url="authentication/login" isSubItem={false} />
+                ) : (
+                    <></>
+                )}
             </div>
             <div className="navbar-subcontainer">
                 <div className="navbar-subtitle">Others</div>
@@ -62,7 +87,7 @@ const NavigationBar: React.FC = () => {
                     parentTitle="Người dùng"
                     subItems={[
                         { icon: FaRegUserCircle, title: "Hồ sơ", url: "profile" },
-                        { icon: GiEntryDoor, title: "Logout", url: "" },
+                        { icon: GiEntryDoor, title: "Đăng xuất", url: "" },
                     ]}
                     url="authentication"
                 />

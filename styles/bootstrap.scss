@@ -49,6 +49,12 @@
     transform: translateX(-50%);
 }
 
+.centralized-relative {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .m-r-1rem {
     margin-right: 1rem;
 }
@@ -81,4 +87,36 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-uppercase {
+    text-transform: uppercase;
+}
+
+.text-camel {
+    text-transform: capitalize;
+}
+
+.float-right {
+    float: right;
+}
+
+.font-20 {
+    font-size: 20px;
+}
+
+@media screen and (max-width: 1024px) {
+    .font-20 {
+        font-size: 16px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .font-20 {
+        font-size: 14px;
+    }
 }

@@ -1,15 +1,14 @@
-import { WarningFieldName, WarningStatusType } from "../context/AuthContext";
-
-export type RegisterationStepType = "first" | "second" | "third" | "fourth";
+import { UserInfomationInitializer, WarningFieldName, WarningStatusType } from "../context/AuthContext";
 
 export interface AuthReducerAction {
-    type: WarningFieldName | "step";
-    payload: any;
+    type: WarningFieldName | "role" | "info";
+    payload: boolean | string | UserInfomationInitializer;
 }
 
 export interface AuthReducerState {
     accountState: WarningStatusType;
-    step: RegisterationStepType;
+    userRole: string;
+    userInfo: UserInfomationInitializer;
 }
 
 export const authReducer = (state: AuthReducerState, action: AuthReducerAction) => {
@@ -20,7 +19,7 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    city: payload,
+                    city: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "district":
@@ -28,7 +27,7 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    district: payload,
+                    district: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "ward":
@@ -36,7 +35,7 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    ward: payload,
+                    ward: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "street":
@@ -44,7 +43,7 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    street: payload,
+                    street: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "level":
@@ -52,7 +51,7 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    level: payload,
+                    level: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "username":
@@ -60,7 +59,15 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    username: payload,
+                    username: typeof payload === "boolean" ? payload : true,
+                },
+            };
+        case "email":
+            return {
+                ...state,
+                accountState: {
+                    ...state.accountState,
+                    email: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "password":
@@ -68,7 +75,7 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    password: payload,
+                    password: typeof payload === "boolean" ? payload : true,
                 },
             };
         case "phone":
@@ -76,13 +83,18 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
                 ...state,
                 accountState: {
                     ...state.accountState,
-                    phone: payload,
+                    phone: typeof payload === "boolean" ? payload : true,
                 },
             };
-        case "step":
+        case "role":
             return {
                 ...state,
-                step: payload,
+                userRole: payload.toString(),
+            };
+        case "info":
+            return {
+                ...state,
+                userInfo: payload as UserInfomationInitializer,
             };
         default:
             return state;

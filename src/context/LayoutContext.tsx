@@ -7,6 +7,8 @@ export type SnackbarType = "error" | "info" | "success" | "warning";
 
 export type ProductTypeConfirmationType = "deleteProductType" | "createProductType" | "editProductType";
 export type ProductConfirmationType = "createProduct" | "editProduct" | "deleteProduct";
+export type UserConfirmationType = "logout" | "editProfile" | "changePassword";
+export type BuyingRequestConfirmationType = "newBuyingRequest" | "confirmBuyingRequest";
 interface LayoutContextProviderProps {
     children: ReactNode;
 }
@@ -20,7 +22,7 @@ interface SnackbarValuesProps {
 interface ConfirmationModalValuesInitializer {
     title: string;
     isToggle: boolean;
-    type: ProductTypeConfirmationType | ProductConfirmationType;
+    type: ProductTypeConfirmationType | ProductConfirmationType | UserConfirmationType | BuyingRequestConfirmationType;
 }
 
 interface LayoutContextDefault {

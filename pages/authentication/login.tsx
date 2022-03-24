@@ -10,30 +10,26 @@ import Image from "next/image";
 import { Button, FormLabel, Grid, Input, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { AuthContext } from "../../src/context/AuthContext";
+import { useRouter } from "next/router";
 
 export interface LoginUserType {
     username: string;
     password: string;
 }
 const Login = () => {
-    const { loginUser } = useContext(AuthContext);
+    const router = useRouter();
+    const { isLoggedIn, loginUser } = useContext(AuthContext);
     const { changeOnLoginPageStatus } = useContext(LayoutContext);
     const [currentUser, setCurrentUser] = useState<LoginUserType>({
         username: "",
         password: "",
     });
 
-    useEffect(() => {
-        changeOnLoginPageStatus(true);
-        return () => {
-            changeOnLoginPageStatus(false);
-        };
-    }, []);
-
     const submitLoginForm = (event: SyntheticEvent) => {
         event.preventDefault();
         loginUser(currentUser);
     };
+
     const changeCurrentUserInformation = (event: SyntheticEvent, inputFieldName: "username" | "password") => {
         const target = event.target as HTMLInputElement;
         if (inputFieldName === "username") {
@@ -42,6 +38,17 @@ const Login = () => {
         }
         setCurrentUser({ ...currentUser, password: target.value });
     };
+
+    useEffect(() => {
+        const loginStatus = isLoggedIn();
+        if (loginStatus) {
+            router.push("/");
+        }
+        changeOnLoginPageStatus(true);
+        return () => {
+            changeOnLoginPageStatus(false);
+        };
+    }, []);
 
     return (
         <div>

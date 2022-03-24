@@ -1,18 +1,22 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import ConfirmationModal from "../src/components/layouts/ConfirmationModal";
 import Progress from "../src/components/layouts/Progress";
 import ProductModal from "../src/components/product/ProductModal";
 import ProductTable from "../src/components/product/ProductTable";
-import ProductContextProvider from "../src/context/ProductContext";
+import { AuthContext } from "../src/context/AuthContext";
 
 const Product = () => {
+    const { navigateUser } = useContext(AuthContext);
+    useEffect(() => {
+        navigateUser("/product", ["manager"]);
+    }, []);
     return (
-        <ProductContextProvider>
+        <>
             <Progress />
             <ConfirmationModal />
             <ProductModal />
             <ProductTable />
-        </ProductContextProvider>
+        </>
     );
 };
 

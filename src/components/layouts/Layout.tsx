@@ -1,5 +1,5 @@
 import { ScriptProps } from "next/script";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import NavigationBar from "./NavigationBar";
 import TopNavigationBar from "./TopNavigationBar";
 import { LayoutContext } from "../../context/LayoutContext";
@@ -8,6 +8,8 @@ import { Container } from "@mui/material";
 import Snackbar from "./Snackbar";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "next/router";
+import socket from "../../socket";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface LayoutProps {
     children: ScriptProps;
@@ -15,24 +17,33 @@ interface LayoutProps {
 
 // eslint-disable-next-line no-redeclare
 const Layout = (props: LayoutProps) => {
-    const [isDatedCookie, setIsDatedCookie] = useState(false);
     const router = useRouter();
     const { checkCookie } = useContext(AuthContext);
     const checkLoginStatus = () => {
         const currentPath = router.pathname;
+        console.log(currentPath);
         const isLoggedIn = checkCookie();
-        if (!isLoggedIn && currentPath === "/") {
+        if (
+            !isLoggedIn &&
+            currentPath !== "/authentication/login" &&
+            currentPath !== "/authentication/register/default" &&
+            currentPath !== "/authentication/register/oauth" &&
+            currentPath !== "/authorization"
+        ) {
             changeSnackbarValues({
-                content: "You're not logged in or your cookie is now expired, please login to continue",
+                content: "Phiên đăng nhập của bạn đã hết hạn, vui lòng thử lại !",
                 type: "error",
                 isToggle: true,
             });
-            setIsDatedCookie(true);
+            setTimeout(() => {
+                socket.disconnect();
+                router.push("/authentication/login");
+            }, 3000);
             return;
         }
         if (currentPath === "/") {
             changeSnackbarValues({
-                content: "Welcome back!",
+                content: "Chào mừng quay trở lại !",
                 type: "info",
                 isToggle: true,
             });
@@ -50,9 +61,6 @@ const Layout = (props: LayoutProps) => {
         changeSnackbarStatus,
     } = useContext(LayoutContext);
     const { content, isToggle, type } = snackbarValues;
-    const checkLoginStatusInterval = setInterval(() => {
-        checkLoginStatus();
-    }, 360000);
     useEffect(() => {
         checkLoginStatus();
         if (snackbarValues.isToggle) {
@@ -75,11 +83,6 @@ const Layout = (props: LayoutProps) => {
             changeSnackbarPosition({ ...snackbarPosition, vertical: "top" });
         };
     }, [mdMatched]);
-    useEffect(() => {
-        if (isDatedCookie) {
-            clearInterval(checkLoginStatusInterval);
-        }
-    }, [isDatedCookie]);
     const topNavbarScaleAnimation = useSpring({
         from: {
             width: "80%",
@@ -128,6 +131,7 @@ const Layout = (props: LayoutProps) => {
                             <TopNavigationBar />
                         </animated.div>
                         <animated.div className="page-wrapper" style={pageScaleAnimation}>
+                            <ConfirmationModal />
                             <Snackbar type={type} content={content} isToggle={isToggle} />
                             {props.children}
                         </animated.div>
@@ -138,6 +142,7 @@ const Layout = (props: LayoutProps) => {
                             <TopNavigationBar />
                         </div>
                         <div className="page-wrapper page-wrapper--responsive">
+                            <ConfirmationModal />
                             <Snackbar type={type} content={content} isToggle={isToggle} />
                             {props.children}
                         </div>
@@ -155,6 +160,7 @@ const Layout = (props: LayoutProps) => {
                             <TopNavigationBar />
                         </animated.div>
                         <animated.div className="page-wrapper">
+                            <ConfirmationModal />
                             <Snackbar type={type} content={content} isToggle={isToggle} />
                             {props.children}
                         </animated.div>
@@ -165,6 +171,7 @@ const Layout = (props: LayoutProps) => {
                             <TopNavigationBar />
                         </div>
                         <div className="page-wrapper page-wrapper--responsive">
+                            <ConfirmationModal />
                             <Snackbar type={type} content={content} isToggle={isToggle} />
                             {props.children}
                         </div>
@@ -174,6 +181,7 @@ const Layout = (props: LayoutProps) => {
         )
     ) : (
         <Container>
+            <ConfirmationModal />
             <Snackbar type={type} content={content} isToggle={isToggle} />
             {props.children}
         </Container>

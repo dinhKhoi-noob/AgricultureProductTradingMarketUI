@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 import { GiEntryDoor } from "react-icons/gi";
 import { RiSearch2Line, RiNotification4Fill } from "react-icons/ri";
@@ -8,13 +8,20 @@ import { animated, Transition, useSpring } from "react-spring";
 import NotificationCard from "./top_navigation_bar/NotificationCard";
 import MessageCard from "./top_navigation_bar/MessageCard";
 import { LayoutContext } from "../../context/LayoutContext";
+import { AuthContext } from "../../context/AuthContext";
+import Image from "next/image";
+import NoUserAvatar from "../../../public/assets/no_user.jpg";
 
 const TopNavigationBar = () => {
-    const { smMatched, changeToggleOnNavbarStatus } = useContext(LayoutContext);
+    const { smMatched, changeToggleOnNavbarStatus, changeConfirmationModalValues } = useContext(LayoutContext);
+    const { userInfo, getUserInformation } = useContext(AuthContext);
     const [isToggleOnSearchBtn, setIsToggleOnSearchBtn] = useState(false);
     const [isToggleOnNotification, setIsToggleOnNotification] = useState(false);
     const [isToggleOnMessage, setIsToggleOnMessage] = useState(false);
     const [isToggleOnUser, setIsToggleOnUser] = useState(false);
+    useEffect(() => {
+        getUserInformation();
+    }, []);
     const searchInputSlideIn = useSpring({
         from: {
             maxWidth: "0px",
@@ -283,8 +290,18 @@ const TopNavigationBar = () => {
                         }, duration);
                     }}
                 >
-                    <div className="top-navbar-user-avatar"></div>
-                    <div className="top-navbar-user-username">Dinh Khoi</div>
+                    <Image
+                        src={
+                            userInfo.avatar === "" || userInfo.avatar === "'avatar'" || !userInfo.avatar
+                                ? NoUserAvatar
+                                : userInfo.avatar
+                        }
+                        layout="fixed"
+                        width="30px"
+                        height="30px"
+                        className="profile-avatar"
+                    ></Image>
+                    <div className="top-navbar-user-username">{userInfo.username}</div>
                     <Transition
                         native
                         items={isToggleOnUser}
@@ -304,7 +321,17 @@ const TopNavigationBar = () => {
                                     </div>
                                     <div className="top-navbar-user-dropdown-tag">
                                         <GiEntryDoor />
-                                        <div>Logout</div>
+                                        <div
+                                            onClick={() => {
+                                                changeConfirmationModalValues({
+                                                    title: "Bạn muốn đăng xuất khỏi ứng dụng ?",
+                                                    isToggle: true,
+                                                    type: "logout",
+                                                });
+                                            }}
+                                        >
+                                            Logout
+                                        </div>
                                     </div>
                                 </animated.div>
                             ) : (

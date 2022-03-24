@@ -22,6 +22,11 @@ export interface ProductTypePropertyInitializer {
     dateModified: string;
 }
 
+export interface InterestItemValueInitializer {
+    id: string;
+    title: string;
+}
+
 interface ProductTypeContextProps {
     children: ReactNode;
 }
@@ -32,6 +37,7 @@ interface ProductTypeContextDefault {
     submitTypeEvent: SubmitEventType;
     productTypeValue: ProductTypeStateInitializer;
     categoryList: ProductTypePropertyInitializer[];
+    interestList: InterestItemValueInitializer[];
     changeToggleModalStatus: (status?: boolean) => void;
     getCategoryList: () => void;
     postNewCategory: (category: ProductTypeStateInitializer) => void;
@@ -41,6 +47,8 @@ interface ProductTypeContextDefault {
     getSpecificProductType: (id: string) => ProductTypePropertyInitializer | null;
     changeSubmitEventType: (type: SubmitEventType) => void;
     changeCurrentProductTypeId: (id: string) => void;
+    changeInterestList: (value: InterestItemValueInitializer) => void;
+    removeInterestItem: (id: string) => void;
     resetField: () => void;
 }
 
@@ -50,6 +58,7 @@ export const ProductTypeContext = createContext<ProductTypeContextDefault>({
     submitTypeEvent: "adding",
     productTypeValue: { title: "", type: "crude" },
     categoryList: [],
+    interestList: [],
     changeToggleModalStatus: () => null,
     getCategoryList: () => null,
     updateCategory: () => null,
@@ -59,6 +68,8 @@ export const ProductTypeContext = createContext<ProductTypeContextDefault>({
     getSpecificProductType: () => null,
     changeSubmitEventType: () => null,
     changeCurrentProductTypeId: () => null,
+    changeInterestList: () => null,
+    removeInterestItem: () => null,
     resetField: () => null,
 });
 
@@ -69,8 +80,10 @@ const ProductTypeContextProvider = ({ children }: ProductTypeContextProps) => {
     const [categoryList, setCategoryList] = useState<ProductTypePropertyInitializer[]>([]);
     const [currentProductTypeId, setCurrentProductTypeId] = useState("");
     const { changeSnackbarValues, changeLoadingStatus } = useContext(LayoutContext);
+
     const [productTypeValue, dispatch] = useReducer(productTypeReducer, {
         productTypeValue: { title: "", type: "crude" },
+        interestList: [],
     });
 
     const resetField = (): void => {
@@ -137,6 +150,7 @@ const ProductTypeContextProvider = ({ children }: ProductTypeContextProps) => {
 
     const updateCategory = async (category: ProductTypeStateInitializer): Promise<void> => {
         try {
+            console.log(category);
             await axios.patch(`${host}/api/category/${currentProductTypeId}`, category);
             changeLoadingStatus(false);
             getCategoryList();
@@ -188,6 +202,14 @@ const ProductTypeContextProvider = ({ children }: ProductTypeContextProps) => {
         }
     };
 
+    const changeInterestList = (value: InterestItemValueInitializer) => {
+        dispatch({ type: "addInterestItem", payload: value });
+    };
+
+    const removeInterestItem = (id: string) => {
+        dispatch({ type: "removeInterestItem", payload: id });
+    };
+
     const getSpecificProductType = (id: string): ProductTypePropertyInitializer | null => {
         const categoryIndex = categoryList.findIndex(category => category.id === id);
         return categoryIndex > -1 ? categoryList[categoryIndex] : null;
@@ -207,6 +229,7 @@ const ProductTypeContextProvider = ({ children }: ProductTypeContextProps) => {
         submitTypeEvent,
         categoryList,
         productTypeValue: productTypeValue.productTypeValue,
+        interestList: productTypeValue.interestList,
         changeToggleModalStatus,
         getCategoryList,
         postNewCategory,
@@ -216,6 +239,8 @@ const ProductTypeContextProvider = ({ children }: ProductTypeContextProps) => {
         changeProductTypeValue,
         getSpecificProductType,
         changeCurrentProductTypeId,
+        changeInterestList,
+        removeInterestItem,
         resetField,
     };
     return <ProductTypeContext.Provider value={ProductTypeContextValue}>{children}</ProductTypeContext.Provider>;
