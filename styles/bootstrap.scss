@@ -109,6 +109,10 @@
     font-size: 20px;
 }
 
+.object-fit-cover {
+    object-fit: cover;
+}
+
 @media screen and (max-width: 1024px) {
     .font-20 {
         font-size: 16px;

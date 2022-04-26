@@ -1,13 +1,13 @@
 import { Box, Button, Chip, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../src/context/AuthContext";
-import { OrderContext, OrderValueInitializer } from "../src/context/OrderContext";
+import { AuthContext } from "../../src/context/AuthContext";
+import { OrderContext, OrderValueInitializer } from "../../src/context/OrderContext";
 import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
 
-const Order = () => {
+const BuyingDashboard = () => {
     const cookie = new Cookies();
     const router = useRouter();
     const { userInfo, getUserInformation } = useContext(AuthContext);
@@ -24,7 +24,6 @@ const Order = () => {
         convertOrderStatus,
     } = useContext(OrderContext);
     const [uniqueRequestId, setUniqueRequestId] = useState<string[]>([]);
-    const [buyingUnpreparedStageOrders, setBuyingUnpreparedStageOrders] = useState<any[]>([]);
     const [sellingPreparingStageOrders, setSellingPreparingStageOrders] = useState<any[]>([]);
 
     const checkIsExistedData = (orderList: any[], data: any) => {
@@ -94,7 +93,7 @@ const Order = () => {
     useEffect(() => {
         if (userInfo && userInfo.id !== "") {
             if (userInfo.role === "manager" || userInfo.role === "shipper" || userInfo.role === "packing_staff") {
-                loadAllOrders(undefined, true);
+                loadAllOrders(undefined, true, "buying");
             }
             if (userInfo.role === "consummer") {
                 loadAllOrders(userInfo.id, true);
@@ -128,6 +127,8 @@ const Order = () => {
                     dateCompletedOrder,
                     status,
                     transactionType,
+                    requestUserId,
+                    subrequestUserId,
                 } = order;
 
                 const { convertedStatus, isDone } = convertOrderStatus(status);
@@ -138,8 +139,8 @@ const Order = () => {
                     price,
                     quantity,
                     total: Math.round(price * quantity),
-                    requestUsername: transactionType === "buying" ? subrequestUsername : requestUsername,
-                    subrequestUsername: transactionType === "selling" ? subrequestUsername : requestUsername,
+                    requestUsername: requestUsername,
+                    subrequestUsername: subrequestUsername,
                     expiredDate:
                         transactionType === "selling"
                             ? format(new Date(dateCompletedOrder), "dd/MM/yyyy HH:mm:ss")
@@ -152,16 +153,19 @@ const Order = () => {
                     transactionType,
                 };
                 if (
-                    transactionType === "buying" &&
-                    (status === "preparing" || status === "ready" || status === "carrying_in")
-                ) {
-                    filterOrder(status, temporaryData);
-                }
-                if (
-                    transactionType === "selling" &&
-                    status !== "preparing" &&
-                    status !== "ready" &&
-                    status !== "carrying_in"
+                    (transactionType === "buying" &&
+                        userInfo.role === "consummer" &&
+                        userInfo.id === requestUserId &&
+                        (status === "preparing" || status === "ready" || status === "carrying_in")) ||
+                    (transactionType === "buying" &&
+                        userInfo.role !== "consummer" &&
+                        (status === "preparing" || status === "ready" || status === "carrying_in")) ||
+                    (transactionType === "selling" &&
+                        userInfo.role === "consummer" &&
+                        userInfo.id === subrequestUserId &&
+                        status !== "preparing" &&
+                        status !== "ready" &&
+                        status !== "carrying_in")
                 ) {
                     filterOrder(status, temporaryData);
                 }
@@ -171,83 +175,47 @@ const Order = () => {
 
     useEffect(() => {
         if (uniqueRequestId.length > 0) {
-            const transitoryBuyingUnpreparedStageOrders: any[] = [];
             const transitorySellingPreparingStageOrders: any[] = [];
             const loopedOrderIds: string[] = [];
             uniqueRequestId.forEach((reqId: any) => {
-                const unitedBuyingRequest: OrderValueInitializer[] = [];
                 const unitedSellingRequest: OrderValueInitializer[] = [];
                 orderList.forEach((order: OrderValueInitializer) => {
-                    const { transactionType, requestId, status } = order;
+                    const { requestId, status, transactionType, subrequestUserId, requestUserId } = order;
                     if (
-                        transactionType === "buying" &&
-                        requestId === reqId &&
-                        status !== "preparing" &&
-                        status !== "ready" &&
-                        status !== "carrying_in"
-                    ) {
-                        unitedBuyingRequest.push(order);
-                    }
-                    if (
-                        transactionType === "selling" &&
-                        requestId === reqId &&
-                        (status === "preparing" || status === "ready" || status === "carrying_in")
+                        (requestId === reqId &&
+                            transactionType === "buying" &&
+                            userInfo.role === "consummer" &&
+                            userInfo.id === requestUserId &&
+                            status !== "preparing" &&
+                            status !== "ready" &&
+                            status !== "carrying_in") ||
+                        (requestId === reqId &&
+                            transactionType === "buying" &&
+                            userInfo.role !== "consummer" &&
+                            status !== "preparing" &&
+                            status !== "ready" &&
+                            status !== "carrying_in") ||
+                        (requestId === reqId &&
+                            transactionType === "selling" &&
+                            userInfo.role === "consummer" &&
+                            userInfo.id === subrequestUserId &&
+                            (status === "preparing" || status === "ready" || status === "carrying_in"))
                     ) {
                         unitedSellingRequest.push(order);
                     }
                 });
-                if (unitedBuyingRequest.length > 0 && !loopedOrderIds.includes(reqId)) {
-                    transitoryBuyingUnpreparedStageOrders.push(unitedBuyingRequest);
-                }
                 if (unitedSellingRequest.length > 0 && !loopedOrderIds.includes(reqId)) {
                     transitorySellingPreparingStageOrders.push(unitedSellingRequest);
                 }
                 loopedOrderIds.push(reqId);
             });
-            setBuyingUnpreparedStageOrders(transitoryBuyingUnpreparedStageOrders);
+
             setSellingPreparingStageOrders(transitorySellingPreparingStageOrders);
         }
     }, [uniqueRequestId]);
 
     useEffect(() => {
-        console.log(4);
-        console.log(buyingUnpreparedStageOrders, sellingPreparingStageOrders);
-        if (buyingUnpreparedStageOrders.length > 0) {
-            buyingUnpreparedStageOrders.forEach((orderArray: OrderValueInitializer[]) => {
-                const {
-                    expiredDate,
-                    dateCompletedOrder,
-                    measure,
-                    subrequestUsername,
-                    status,
-                    requestId,
-                    transactionType,
-                } = orderArray[0];
-                const { convertedStatus, isDone } = convertOrderStatus(status);
-                let totalOrderQuantity = 0;
-                let totalOrderAmount = 0;
-                let users = "";
-                orderArray.forEach((order: OrderValueInitializer) => {
-                    totalOrderQuantity += order.quantity;
-                    totalOrderAmount += order.quantity * order.price;
-                    users += `${order.subrequestUsername}, `;
-                });
-                const unitedOrder = {
-                    id: "ROOTB_" + requestId,
-                    quantity: totalOrderQuantity,
-                    measure,
-                    requestUsername: users.substring(0, users.length - 2),
-                    subrequestUsername,
-                    status: <Chip label={convertedStatus} color={isDone ? "success" : "warning"} />,
-                    expiredDate: format(new Date(expiredDate), "dd/MM/yyyy HH:mm:ss"),
-                    dateCompletedOrder: format(new Date(dateCompletedOrder), "dd/MM/yyyy HH:mm:ss"),
-                    productName: 0,
-                    total: totalOrderAmount,
-                    transactionType,
-                };
-                filterOrder(status, unitedOrder);
-            });
-        }
+        console.log(sellingPreparingStageOrders);
         if (sellingPreparingStageOrders.length > 0) {
             sellingPreparingStageOrders.forEach((orderArray: OrderValueInitializer[]) => {
                 const {
@@ -271,11 +239,13 @@ const Order = () => {
                 });
                 console.log(orderArray, totalOrderQuantity, totalOrderAmount, productName);
                 const unitedOrder = {
-                    id: "ROOTS_" + requestId,
+                    id: "ROOTB_" + requestId,
                     quantity: totalOrderQuantity,
                     measure,
-                    requestUsername,
-                    subrequestUsername: users.substring(0, users.length - 2),
+                    requestUsername:
+                        transactionType === "buying" ? users.substring(0, users.length - 2) : requestUsername, // owner
+                    subrequestUsername:
+                        transactionType === "buying" ? requestUsername : users.substring(0, users.length - 2), // customer
                     productName,
                     status: <Chip label={convertedStatus} color={isDone ? "success" : "warning"} />,
                     expiredDate: format(new Date(dateCompletedOrder), "dd/MM/yyyy HH:mm:ss"),
@@ -286,7 +256,7 @@ const Order = () => {
                 filterOrder(status, unitedOrder);
             });
         }
-    }, [buyingUnpreparedStageOrders, sellingPreparingStageOrders]);
+    }, [sellingPreparingStageOrders]);
 
     const orderColumns: GridColDef[] = [
         { field: "id", headerName: "id", width: 100 },
@@ -316,6 +286,9 @@ const Order = () => {
 
     return (
         <Box>
+            <Typography variant="h4" textAlign="center" margin={4}>
+                Đơn hàng mua vào
+            </Typography>
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang chuẩn bị / chờ nhận hàng
             </Typography>
@@ -500,4 +473,4 @@ const Order = () => {
     );
 };
 
-export default Order;
+export default BuyingDashboard;

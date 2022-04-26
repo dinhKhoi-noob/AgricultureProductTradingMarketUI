@@ -77,3 +77,39 @@ a {
     padding: 4px;
     cursor: pointer;
 }
+
+.own-message {
+    background-color: #673ab7;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.other-message {
+    background-color: white;
+    color: black;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.message-right {
+    margin-right: 15px;
+    width: 60%;
+    float: right;
+}
+
+.message-left {
+    margin-left: 15px;
+    width: 60%;
+    float: left;
+}
+
+.deep-element {
+    z-index: -100;
+}
+
+.white-icon {
+    > path {
+        stroke: white;
+    }
+}

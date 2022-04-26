@@ -1,45 +1,24 @@
-import { UserValueInitializer } from "../context/ChatContext";
+import { MessageValueResponseInitializer } from "../context/ChatContext";
 
-type ChatActionType = "loadUser" | "addUser" | "sendMessage" | "hasNewMessage";
+type ChatActionType = "loadMessages";
 
 interface ChatState {
-    user: UserValueInitializer[];
+    messages: MessageValueResponseInitializer[];
 }
 
 interface ChatAction {
     type: ChatActionType;
-    payload: any;
+    payload: MessageValueResponseInitializer[];
 }
 
 export const chatReducer = (state: ChatState, action: ChatAction) => {
     const { type, payload } = action;
-    let index = 0;
-    if (type === "addUser") {
-        index = state.user.findIndex(user => {
-            return user === payload;
-        });
-    }
-    if (type === "sendMessage" || type === "hasNewMessage") {
-        index = state.user.findIndex(user => {
-            return user.uid === payload.uid;
-        });
-    }
-    const temporaryUserList = state.user;
     console.log(type, payload);
     switch (type) {
-        case "loadUser":
+        case "loadMessages":
             return {
                 ...state,
-                user: payload,
-            };
-        case "addUser":
-            if (index > -1) {
-                return state;
-            }
-            temporaryUserList.push(payload);
-            return {
-                ...state,
-                user: temporaryUserList,
+                messages: payload as MessageValueResponseInitializer[],
             };
         default:
             return state;

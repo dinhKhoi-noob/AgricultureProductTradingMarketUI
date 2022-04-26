@@ -2,13 +2,43 @@
 import React, { createContext, ReactNode, useState, useReducer } from "react";
 import { SnackbarOrigin, useMediaQuery, useTheme } from "@mui/material";
 import { layoutReducer } from "../reducer/layoutReducer";
+import socket from "../socket";
 
 export type SnackbarType = "error" | "info" | "success" | "warning";
 
 export type ProductTypeConfirmationType = "deleteProductType" | "createProductType" | "editProductType";
 export type ProductConfirmationType = "createProduct" | "editProduct" | "deleteProduct";
 export type UserConfirmationType = "logout" | "editProfile" | "changePassword";
-export type BuyingRequestConfirmationType = "newBuyingRequest" | "confirmBuyingRequest";
+export type RequestConfirmationType =
+    | "newBuyingRequest"
+    | "newSellingRequest"
+    | "confirmBuyingRequest"
+    | "confirmSellingRequest"
+    | "viewRequest"
+    | "registerBuyingSubrequest"
+    | "registerSellingSubrequest"
+    | "newAddress"
+    | "updateBuyingRequest"
+    | "updateSellingRequest"
+    | "cancelBuyingRequest"
+    | "cancelSellingRequest"
+    | "updateBuyingSubrequest"
+    | "updateSellingSubrequest"
+    | "cancelBuyingSubrequest"
+    | "cancelSellingSubrequest"
+    | "confirmBuyingSubrequest"
+    | "confirmSellingSubrequest";
+
+export type OrderConfirmationType =
+    | "changeToReady"
+    | "changeToCarryingIn"
+    | "changeToCarriedIn"
+    | "changeToPackaging"
+    | "changeToPackaged"
+    | "changeToDelivering"
+    | "changeToSuccess"
+    | "changeToConfirmed";
+
 interface LayoutContextProviderProps {
     children: ReactNode;
 }
@@ -17,12 +47,18 @@ interface SnackbarValuesProps {
     content: string;
     type: SnackbarType;
     isToggle: boolean;
+    link?: string;
 }
 
 interface ConfirmationModalValuesInitializer {
     title: string;
     isToggle: boolean;
-    type: ProductTypeConfirmationType | ProductConfirmationType | UserConfirmationType | BuyingRequestConfirmationType;
+    type:
+        | ProductTypeConfirmationType
+        | ProductConfirmationType
+        | UserConfirmationType
+        | RequestConfirmationType
+        | OrderConfirmationType;
 }
 
 interface LayoutContextDefault {
@@ -37,6 +73,13 @@ interface LayoutContextDefault {
     lgMatched: Boolean;
     xlMatched: Boolean;
     confirmationModalValue: ConfirmationModalValuesInitializer;
+    onSellingPage: boolean;
+    haveNewNotification: boolean;
+    notifications: any[];
+    postNotification: (content: string, requestId: string, id: string, username: string, type: string) => void;
+    changeNotificationList: (notifications: any[]) => void;
+    loadNotifications: () => void;
+    changeHaveNewNotificationStatus: () => void;
     changeToggleOnNavbarStatus: (status?: boolean) => void;
     changeSnackbarStatus: (status: boolean) => void;
     changeSnackbarPosition: (position: SnackbarOrigin) => void;
@@ -44,6 +87,7 @@ interface LayoutContextDefault {
     changeSnackbarValues: (values: SnackbarValuesProps) => void;
     changeLoadingStatus: (status: boolean) => void;
     changeConfirmationModalValues: (value: ConfirmationModalValuesInitializer) => void;
+    changeOnSellingPageStatus: (status: boolean) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextDefault>({
@@ -62,6 +106,13 @@ export const LayoutContext = createContext<LayoutContextDefault>({
         title: "",
         type: "createProductType",
     },
+    onSellingPage: false,
+    haveNewNotification: false,
+    notifications: [],
+    postNotification: () => null,
+    changeNotificationList: () => null,
+    loadNotifications: () => null,
+    changeHaveNewNotificationStatus: () => null,
     changeToggleOnNavbarStatus: () => null,
     changeSnackbarStatus: () => null,
     changeSnackbarPosition: () => null,
@@ -69,6 +120,7 @@ export const LayoutContext = createContext<LayoutContextDefault>({
     changeSnackbarValues: () => null,
     changeLoadingStatus: () => null,
     changeConfirmationModalValues: () => null,
+    changeOnSellingPageStatus: () => null,
 });
 
 const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
@@ -82,7 +134,7 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         vertical: "top",
         horizontal: "right",
     });
-    const [layoutState, dispatch] = useReducer(layoutReducer, { onLoading: false });
+    const [layoutState, dispatch] = useReducer(layoutReducer, { onLoading: false, onSellingPage: false });
     const [isToggleOnNavbar, setIsToggleOnNavbar] = useState(false);
     const [isOnLoginPage, setIsOnLoginPage] = useState(false);
     const [snackbarValues, setSnackbarValues] = useState<SnackbarValuesProps>({
@@ -90,11 +142,37 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         type: "info",
         isToggle: false,
     });
+    const [haveNewNotification, setHaveNewNotification] = useState(false);
     const [confirmationModalValue, setConfirmationModalValue] = useState<ConfirmationModalValuesInitializer>({
         isToggle: false,
         title: "",
         type: "deleteProductType",
     });
+
+    const [notifications, setNotifications] = useState<any[]>([]);
+
+    const postNotification = (content: string, requestId: string, id: string, username: string, type: string) => {
+        setNotifications([...notifications, { content, username }]);
+        switch (type) {
+            case "newRequest":
+                socket.emit("notification:create:newRequest", { user: { username, id }, data: { content, requestId } });
+                break;
+            default:
+                return;
+        }
+    };
+
+    const loadNotifications = () => {
+        socket.emit("notification:get:all");
+    };
+
+    const changeNotificationList = (notifications: any[]) => {
+        setNotifications(notifications);
+    };
+
+    const changeHaveNewNotificationStatus = () => {
+        setHaveNewNotification(!haveNewNotification);
+    };
 
     const changeLoadingStatus = (status: boolean) => {
         dispatch({ type: "loading", payload: status });
@@ -118,12 +196,17 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
     };
 
     const changeSnackbarValues = (values: SnackbarValuesProps) => {
+        console.log(values);
         const { content, type, isToggle } = values;
         setSnackbarValues({ ...snackbarValues, content, type, isToggle });
     };
 
     const changeConfirmationModalValues = (value: ConfirmationModalValuesInitializer) => {
         setConfirmationModalValue(value);
+    };
+
+    const changeOnSellingPageStatus = (status: boolean) => {
+        dispatch({ type: "changeOnSellingPageStatus", payload: status });
     };
 
     const layoutContextData = {
@@ -138,6 +221,13 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         lgMatched,
         xlMatched,
         confirmationModalValue,
+        onSellingPage: layoutState.onSellingPage,
+        haveNewNotification,
+        notifications,
+        changeNotificationList,
+        postNotification,
+        loadNotifications,
+        changeHaveNewNotificationStatus,
         changeToggleOnNavbarStatus,
         changeSnackbarPosition,
         changeOnLoginPageStatus,
@@ -145,6 +235,7 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         changeSnackbarValues,
         changeLoadingStatus,
         changeConfirmationModalValues,
+        changeOnSellingPageStatus,
     };
     return <LayoutContext.Provider value={layoutContextData}>{children}</LayoutContext.Provider>;
 };

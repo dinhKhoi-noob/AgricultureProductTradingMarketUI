@@ -18,10 +18,10 @@ interface LayoutProps {
 // eslint-disable-next-line no-redeclare
 const Layout = (props: LayoutProps) => {
     const router = useRouter();
-    const { checkCookie } = useContext(AuthContext);
+    const { userInfo, checkCookie, getUserInformation } = useContext(AuthContext);
+
     const checkLoginStatus = () => {
         const currentPath = router.pathname;
-        console.log(currentPath);
         const isLoggedIn = checkCookie();
         if (
             !isLoggedIn &&
@@ -55,14 +55,20 @@ const Layout = (props: LayoutProps) => {
         isOnLoginPage,
         snackbarValues,
         snackbarPosition,
+        notifications,
+        changeNotificationList,
         changeToggleOnNavbarStatus,
         changeSnackbarValues,
         changeSnackbarPosition,
         changeSnackbarStatus,
     } = useContext(LayoutContext);
-    const { content, isToggle, type } = snackbarValues;
+    const { content, isToggle, type, link } = snackbarValues;
     useEffect(() => {
+        getUserInformation();
         checkLoginStatus();
+        socket.on("notification:get:all", result => {
+            changeNotificationList(result);
+        });
         if (snackbarValues.isToggle) {
             changeSnackbarStatus(false);
         }
@@ -83,6 +89,19 @@ const Layout = (props: LayoutProps) => {
             changeSnackbarPosition({ ...snackbarPosition, vertical: "top" });
         };
     }, [mdMatched]);
+    useEffect(() => {
+        if (userInfo.id) {
+            socket.emit("joinroom", { role: userInfo.role });
+            socket.auth = { uid: userInfo.id };
+            socket.connect();
+        }
+    }, [userInfo]);
+    useEffect(() => {
+        socket.on("notification:newrequest", result => {
+            const { content, status } = result;
+            changeSnackbarValues({ content, isToggle: true, type: status === 201 ? "info" : "error" });
+        });
+    }, [notifications]);
     const topNavbarScaleAnimation = useSpring({
         from: {
             width: "80%",
@@ -132,7 +151,12 @@ const Layout = (props: LayoutProps) => {
                         </animated.div>
                         <animated.div className="page-wrapper" style={pageScaleAnimation}>
                             <ConfirmationModal />
-                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            <Snackbar
+                                type={type}
+                                content={content}
+                                isToggle={isToggle}
+                                link={link ? link : undefined}
+                            />
                             {props.children}
                         </animated.div>
                     </div>
@@ -143,7 +167,12 @@ const Layout = (props: LayoutProps) => {
                         </div>
                         <div className="page-wrapper page-wrapper--responsive">
                             <ConfirmationModal />
-                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            <Snackbar
+                                type={type}
+                                content={content}
+                                isToggle={isToggle}
+                                link={link ? link : undefined}
+                            />
                             {props.children}
                         </div>
                     </div>
@@ -161,7 +190,12 @@ const Layout = (props: LayoutProps) => {
                         </animated.div>
                         <animated.div className="page-wrapper">
                             <ConfirmationModal />
-                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            <Snackbar
+                                type={type}
+                                content={content}
+                                isToggle={isToggle}
+                                link={link ? link : undefined}
+                            />
                             {props.children}
                         </animated.div>
                     </div>
@@ -172,7 +206,12 @@ const Layout = (props: LayoutProps) => {
                         </div>
                         <div className="page-wrapper page-wrapper--responsive">
                             <ConfirmationModal />
-                            <Snackbar type={type} content={content} isToggle={isToggle} />
+                            <Snackbar
+                                type={type}
+                                content={content}
+                                isToggle={isToggle}
+                                link={link ? link : undefined}
+                            />
                             {props.children}
                         </div>
                     </div>
@@ -182,7 +221,7 @@ const Layout = (props: LayoutProps) => {
     ) : (
         <Container>
             <ConfirmationModal />
-            <Snackbar type={type} content={content} isToggle={isToggle} />
+            <Snackbar type={type} content={content} isToggle={isToggle} link={link ? link : undefined} />
             {props.children}
         </Container>
     );

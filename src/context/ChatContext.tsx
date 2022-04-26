@@ -1,16 +1,17 @@
-import React, { createContext, ReactNode, useReducer, useState } from "react";
-import { chatReducer } from "../reducer/chatReducer";
+/* eslint-disable camelcase */
+import React, { createContext, ReactNode, useState } from "react";
 import socket from "../socket";
 
-export interface MessageValueInitializer {
+export interface MessageValueResponseInitializer {
+    id: string;
+    sentBy: string;
     content: string;
-    self: boolean;
-    uid: string;
+    dateSent: Date;
 }
 
-export interface UserValueInitializer {
-    username: string;
+export interface MessageValueInitializer {
     uid: string;
+    content: string;
 }
 
 interface ChatContextProps {
@@ -18,75 +19,60 @@ interface ChatContextProps {
 }
 
 interface ChatContextDefault {
-    users: UserValueInitializer[];
-    currentTargetUser: UserValueInitializer;
-    loadUser: () => void;
-    addUser: (user: UserValueInitializer) => void;
-    changeCurrentTargetUser: (user: UserValueInitializer) => void;
-    addNewMessage: (message: MessageValueInitializer) => void;
-    hasNewMessage: (uid: string) => void;
+    messages: MessageValueResponseInitializer[];
+    haveNewMessage: boolean;
+    changeMessageList: (messages: MessageValueResponseInitializer[]) => void;
+    loadMessages: (userId: string, roomId: string) => void;
+    addNewMessage: (message: MessageValueInitializer, roomId: string) => void;
 }
 
 export const ChatContext = createContext<ChatContextDefault>({
-    users: [],
-    currentTargetUser: {
-        username: "",
-        uid: "",
-    },
-    loadUser: () => null,
-    addUser: () => null,
-    changeCurrentTargetUser: () => null,
+    messages: [],
+    haveNewMessage: false,
+    changeMessageList: () => null,
+    loadMessages: () => null,
     addNewMessage: () => null,
-    hasNewMessage: () => null,
 });
 
 const ChatContextProvier = ({ children }: ChatContextProps) => {
-    const [chatReducerState, dispatch] = useReducer(chatReducer, {
-        user: [],
-    });
+    const [haveNewMessage, setHaveNewMessage] = useState(false);
 
-    const [currentTargetUser, setCurrentTargetUser] = useState<UserValueInitializer>({
-        uid: "",
-        username: "",
-    });
+    const [messages, setMessages] = useState<MessageValueResponseInitializer[]>([]);
 
-    const loadUser = () => {
-        const currentUsers: UserValueInitializer[] = [];
-        socket.on("users", users => {
-            users.forEach((user: UserValueInitializer) => {
-                if (user.uid !== socket.id) {
-                    currentUsers.push(user);
-                }
+    const changeMessageList = (messages: MessageValueResponseInitializer[]) => {
+        setMessages(messages);
+    };
+
+    const loadMessages = (userId: string, roomId: string) => {
+        socket.emit("messages:load", { roomId, userId });
+        socket.on("loadMessages:success", result => {
+            const mappedMessages: MessageValueResponseInitializer[] = result.map((message: any) => {
+                const { content, date_created, sent_by, id } = message;
+                return {
+                    id,
+                    sentBy: sent_by,
+                    content,
+                    dateSent: new Date(date_created),
+                };
             });
-            console.log("users: ", users);
-            dispatch({ type: "loadUser", payload: currentUsers });
+            changeMessageList(mappedMessages);
         });
     };
 
-    const addUser = (user: UserValueInitializer) => {
-        dispatch({ type: "addUser", payload: user });
-    };
-
-    const changeCurrentTargetUser = (user: UserValueInitializer) => {
-        setCurrentTargetUser(user);
-    };
-
-    const addNewMessage = (message: MessageValueInitializer) => {
-        // dispatch({ type: "sendMessage", payload: message });
-    };
-
-    const hasNewMessage = (uid: string) => {
-        // dispatch({ type: "hasNewMessage", payload: { uid } });
+    const addNewMessage = (message: MessageValueInitializer, roomId: string) => {
+        if (message.content.trim().length === 0) {
+            return;
+        }
+        setHaveNewMessage(!haveNewMessage);
+        socket.emit("newMessage:post", { roomId, message: message.content, files: [], sendBy: message.uid });
     };
 
     const chatContextValue = {
-        currentTargetUser,
-        users: chatReducerState.user,
-        loadUser,
-        addUser,
-        changeCurrentTargetUser,
+        messages,
+        haveNewMessage,
+        changeMessageList,
+        loadMessages,
         addNewMessage,
-        hasNewMessage,
     };
     return <ChatContext.Provider value={chatContextValue}>{children}</ChatContext.Provider>;
 };

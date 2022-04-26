@@ -1,11 +1,13 @@
 import { Box, Button, Grid, LinearProgress, Tooltip, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
-import NoUserImage from "../../../public/assets/no_user.jpg";
-import { LayoutContext } from "../../context/LayoutContext";
-import { BuyingRequestContext } from "../../context/BuyingRequestContext";
-import { SelledUserProps, OwnerProps } from "../../context/BuyingRequestContext";
-import DefaultThumbnail from "../../../public/assets/default-thumbnail.jpeg";
+import NoUserImage from "../../../../public/assets/no_user.jpg";
+import { LayoutContext } from "../../../context/LayoutContext";
+import { RequestContext, TransactionType } from "../../../context/RequestContext";
+import { SucceedTradingUserProps, OwnerProps } from "../../../context/RequestContext";
+import DefaultThumbnail from "../../../../public/assets/default-thumbnail.jpeg";
+import { useRouter } from "next/router";
+import Cookies from "universal-cookie";
 
 interface BuyingRequestCardProps {
     id: string;
@@ -13,23 +15,36 @@ interface BuyingRequestCardProps {
     quantity: number;
     progress: number;
     postBy: OwnerProps;
-    user: SelledUserProps[];
+    user: SucceedTradingUserProps[];
     price: number;
-    type: "manage" | "trading";
+    type: "manage" | "trading" | "view";
     thumbnail: string;
+    measure: string;
+    createdDate: string;
+    transactionType: TransactionType;
 }
 
 const BuyingRequestCard = (props: BuyingRequestCardProps) => {
-    const { id, postBy, title, user, quantity, progress, price, type, thumbnail } = props;
+    const {
+        id,
+        postBy,
+        title,
+        user,
+        quantity,
+        progress,
+        price,
+        type,
+        thumbnail,
+        measure,
+        createdDate,
+        transactionType,
+    } = props;
     const quantityRatio = (progress / quantity) * 100;
     const { xsMatched, mdMatched, smMatched } = useContext(LayoutContext);
-    const {
-        changeIsOpenModalStatus,
-        changeModalInformation,
-        fillBuyingRequest,
-        changeSubmitType,
-        changeCurrentRequestId,
-    } = useContext(BuyingRequestContext);
+    const router = useRouter();
+    const cookie = new Cookies();
+    const { changeIsOpenModalStatus, changeModalInformation, fillRequest, changeSubmitType, changeCurrentRequestId } =
+        useContext(RequestContext);
     const [fontSize, setFontSize] = useState(16);
     const [imageSize, setImageSize] = useState(80);
 
@@ -112,16 +127,16 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
                 </Grid>
                 <Grid item xs={1.5} sm={1.5} md={1.5} lg={1.5} xl={1.5}>
                     <Typography fontSize={fontSize}>
-                        {progress}/{quantity}
+                        {progress}/{quantity}&nbsp;{measure}
                     </Typography>
                     <LinearProgress variant="determinate" value={quantityRatio} style={{ width: "80%" }} />
                 </Grid>
                 <Grid item xs={2} sm={2} md={2} lg={2} xl={2}>
-                    <Typography fontSize={fontSize}>30/12/2021</Typography>
+                    <Typography fontSize={fontSize}>{createdDate}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={12} md={2} lg={2} xl={2}>
                     <Box mb={2} />
-                    {type !== "manage" ? (
+                    {type === "trading" ? (
                         <Button
                             variant="contained"
                             color="secondary"
@@ -132,18 +147,37 @@ const BuyingRequestCard = (props: BuyingRequestCardProps) => {
                         >
                             Đăng ký bán
                         </Button>
-                    ) : (
+                    ) : type === "manage" ? (
                         <Button
                             variant="contained"
                             color="secondary"
                             fullWidth={xsMatched ? true : false}
                             onClick={() => {
                                 changeCurrentRequestId(id);
-                                changeSubmitType("confirmBuyingRequest");
-                                fillBuyingRequest(id, "unconfirmed");
+                                changeSubmitType(
+                                    transactionType === "buying" ? "confirmBuyingRequest" : "confirmSellingRequest"
+                                );
+                                fillRequest(id);
                             }}
                         >
                             Duyệt yêu cầu
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            fullWidth={xsMatched ? true : false}
+                            onClick={() => {
+                                cookie.remove("pid");
+                                cookie.set("pid", id);
+                                const endPoint =
+                                    transactionType === "buying"
+                                        ? `/my_request/details/buying?id=${id}&type=manage`
+                                        : `/my_request/details/selling?id=${id}&type=manage`;
+                                router.push(endPoint);
+                            }}
+                        >
+                            Xem chi tiết
                         </Button>
                     )}
                 </Grid>

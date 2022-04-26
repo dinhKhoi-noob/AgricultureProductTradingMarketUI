@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, SyntheticEvent } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 import { GiEntryDoor } from "react-icons/gi";
 import { RiSearch2Line, RiNotification4Fill } from "react-icons/ri";
@@ -11,17 +11,31 @@ import { LayoutContext } from "../../context/LayoutContext";
 import { AuthContext } from "../../context/AuthContext";
 import Image from "next/image";
 import NoUserAvatar from "../../../public/assets/no_user.jpg";
+import { useRouter } from "next/router";
+import Cookies from "universal-cookie";
 
 const TopNavigationBar = () => {
-    const { smMatched, changeToggleOnNavbarStatus, changeConfirmationModalValues } = useContext(LayoutContext);
+    const router = useRouter();
+    const cookie = new Cookies();
+    const { smMatched, changeConfirmationModalValues } = useContext(LayoutContext);
     const { userInfo, getUserInformation } = useContext(AuthContext);
     const [isToggleOnSearchBtn, setIsToggleOnSearchBtn] = useState(false);
     const [isToggleOnNotification, setIsToggleOnNotification] = useState(false);
     const [isToggleOnMessage, setIsToggleOnMessage] = useState(false);
     const [isToggleOnUser, setIsToggleOnUser] = useState(false);
+    const [searchString, setSearchString] = useState("");
+
     useEffect(() => {
         getUserInformation();
     }, []);
+
+    const redirectToSearchPage = (event: SyntheticEvent) => {
+        event.preventDefault();
+        setIsToggleOnSearchBtn(false);
+        router.push(`search_result?search=${searchString}`);
+        cookie.set("search", searchString);
+    };
+
     const searchInputSlideIn = useSpring({
         from: {
             maxWidth: "0px",
@@ -43,8 +57,7 @@ const TopNavigationBar = () => {
                     ></div>
                     <form
                         onSubmit={event => {
-                            event.preventDefault();
-                            setIsToggleOnSearchBtn(false);
+                            redirectToSearchPage(event);
                         }}
                         className="top-navbar__slide-in__form"
                     >
@@ -53,9 +66,14 @@ const TopNavigationBar = () => {
                                 type="text"
                                 autoCorrect="off"
                                 autoComplete="off"
-                                placeholder="Type something to search..."
+                                placeholder="Tìm kiếm nông sản"
                                 className="top-navbar__slide-in__input"
                                 autoFocus
+                                value={searchString}
+                                onChange={(event: SyntheticEvent) => {
+                                    const target = event.target as HTMLInputElement;
+                                    setSearchString(target.value);
+                                }}
                             />
                         </animated.div>
                         <button className="top-navbar__slide-in__btn" type="submit">
@@ -66,19 +84,32 @@ const TopNavigationBar = () => {
             ) : (
                 <></>
             )}
-            <form className="top-navbar-search-area">
+            <form
+                className="top-navbar-search-area"
+                onSubmit={event => {
+                    redirectToSearchPage(event);
+                }}
+            >
                 <div
                     className="top-navbar-toggle-navbar-btn"
                     onClick={event => {
-                        event.preventDefault();
-                        changeToggleOnNavbarStatus();
+                        redirectToSearchPage(event);
                     }}
                 >
                     <RiMenuLine />
                 </div>
                 {smMatched ? (
                     <>
-                        <input type="text" className="top-navbar-search-input" placeholder="Type to search..." />
+                        <input
+                            type="text"
+                            className="top-navbar-search-input"
+                            placeholder="Tìm kiếm nông sản"
+                            value={searchString}
+                            onChange={(event: SyntheticEvent) => {
+                                const target = event.target as HTMLInputElement;
+                                setSearchString(target.value);
+                            }}
+                        />
                         <button type="submit" className="top-navbar-search-btn">
                             <RiSearch2Line></RiSearch2Line>
                         </button>
@@ -88,8 +119,7 @@ const TopNavigationBar = () => {
                         <button
                             className="top-navbar-search-btn top-navbar-search-btn--rounded"
                             onClick={event => {
-                                event.preventDefault();
-                                setIsToggleOnSearchBtn(true);
+                                redirectToSearchPage(event);
                             }}
                         >
                             <RiSearch2Line />
@@ -211,11 +241,25 @@ const TopNavigationBar = () => {
                                     id="top-navbar-message-container"
                                 >
                                     <div className="top-navbar-section-title">Messages</div>
-                                    <form className="top-navbar-search-area m-all-1rem">
+                                    <form
+                                        className="top-navbar-search-area m-all-1rem"
+                                        onSubmit={event => {
+                                            redirectToSearchPage(event);
+                                        }}
+                                    >
                                         <input
                                             type="text"
                                             className="top-navbar-search-input"
-                                            placeholder="Type name to search..."
+                                            placeholder="Tìm kiếm nông sản"
+                                            style={{
+                                                fontFamily: `-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+        Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;`,
+                                            }}
+                                            value={searchString}
+                                            onChange={(event: SyntheticEvent) => {
+                                                const target = event.target as HTMLInputElement;
+                                                setSearchString(target.value);
+                                            }}
                                         />
                                         <button type="submit" className="top-navbar-search-btn">
                                             <RiSearch2Line></RiSearch2Line>

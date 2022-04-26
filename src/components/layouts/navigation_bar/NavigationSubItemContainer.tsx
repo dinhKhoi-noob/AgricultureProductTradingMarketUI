@@ -6,9 +6,9 @@ import { IconType } from "react-icons/lib";
 
 interface SubItemContent {
     parentIcon: IconType;
-    parentTitle: String;
-    subItems: { icon: IconType; title: String; url: String }[];
-    url: String;
+    parentTitle: string;
+    subItems: { icon: IconType; title: string; url: string }[];
+    url: string;
 }
 
 const NavigationSubItemContainer = (props: SubItemContent) => {

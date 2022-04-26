@@ -21,25 +21,32 @@ import {
 import Image from "next/image";
 import React, { SyntheticEvent, useContext, useEffect } from "react";
 import { RiImageAddFill } from "react-icons/ri";
-import { BuyingRequestContext } from "../../context/BuyingRequestContext";
-import { LayoutContext } from "../../context/LayoutContext";
-import { ProductContext, ProductValueInitializer } from "../../context/ProductContext";
-import { UploadFileContext } from "../../context/UploadFileContext";
+import { RequestContext, TransactionType } from "../../../context/RequestContext";
+import { LayoutContext } from "../../../context/LayoutContext";
+import { ProductContext, ProductValueInitializer } from "../../../context/ProductContext";
+import { UploadFileContext } from "../../../context/UploadFileContext";
 
-type InputTypeEvent = "price" | "desc" | "quantity" | "measure";
+type InputTypeEvent = "price" | "desc" | "quantity" | "measure" | "address" | "title";
 
-const AddNewRequestModal = () => {
+interface AddNewRequestModalProps {
+    type: TransactionType;
+}
+
+const UpdateRequestModal = ({ type }: AddNewRequestModalProps) => {
     const {
         isToggleCreateNewRequestModal,
-        newBuyingRequest,
-        submitType,
+        newRequest,
         changeToggleCreateNewRequestModal,
-        changeNewBuyingRequestValue,
+        changeNewRequestValue,
         resetField,
-    } = useContext(BuyingRequestContext);
+        changeTransactionAddress,
+        renderTransactionAddressSelector,
+        changeToggleOnAddNewAddressModalStatus,
+    } = useContext(RequestContext);
     const { changeConfirmationModalValues, changeSnackbarValues } = useContext(LayoutContext);
     const { fileNames, currentFilePaths, changeFilesArray, changeCurrentFilePaths } = useContext(UploadFileContext);
     const { productList } = useContext(ProductContext);
+
     useEffect(() => {
         if (!fileNames || fileNames?.length === 0) {
             changeFilesArray(undefined);
@@ -58,7 +65,16 @@ const AddNewRequestModal = () => {
             changeCurrentFilePaths([]);
         };
     }, [fileNames]);
-    const { product, price, quantity, desc, measure, expiredDate } = newBuyingRequest;
+
+    const { product, price, quantity, desc, measure, expiredDate, productName, address } = newRequest;
+
+    const selectTransactionAddress = (event: SelectChangeEvent) => {
+        const value = event.target.value;
+        if (value !== "default") {
+            changeTransactionAddress(event.target.value);
+            changeNewRequestValue({ ...newRequest, address: event.target.value });
+        }
+    };
 
     const handleChangeImages = (event: SyntheticEvent) => {
         const target = event.target as HTMLInputElement;
@@ -92,23 +108,26 @@ const AddNewRequestModal = () => {
     };
 
     const pickDate = (value: Date | null) => {
-        changeNewBuyingRequestValue({ ...newBuyingRequest, expiredDate: value ? value : new Date(Date.now()) });
+        changeNewRequestValue({ ...newRequest, expiredDate: value ? value : new Date(Date.now()) });
     };
 
     const handleOnChangeInputField = (event: SyntheticEvent, type: InputTypeEvent) => {
         const target = event.target as HTMLInputElement;
         switch (type) {
             case "price":
-                changeNewBuyingRequestValue({ ...newBuyingRequest, price: parseInt(target.value) });
+                changeNewRequestValue({ ...newRequest, price: parseInt(target.value) });
                 break;
             case "quantity":
-                changeNewBuyingRequestValue({ ...newBuyingRequest, quantity: parseInt(target.value) });
+                changeNewRequestValue({ ...newRequest, quantity: parseInt(target.value) });
                 break;
             case "desc":
-                changeNewBuyingRequestValue({ ...newBuyingRequest, desc: target.value });
+                changeNewRequestValue({ ...newRequest, desc: target.value });
                 break;
             case "measure":
-                changeNewBuyingRequestValue({ ...newBuyingRequest, measure: target.value });
+                changeNewRequestValue({ ...newRequest, measure: target.value });
+                break;
+            case "title":
+                changeNewRequestValue({ ...newRequest, productName: target.value });
                 break;
             default:
                 return;
@@ -116,45 +135,15 @@ const AddNewRequestModal = () => {
     };
 
     const selectProduct = (event: SelectChangeEvent) => {
-        changeNewBuyingRequestValue({ ...newBuyingRequest, product: event.target.value });
+        changeNewRequestValue({ ...newRequest, product: event.target.value });
     };
 
-    const createNewBuyingRequest = (event: SyntheticEvent) => {
-        event.preventDefault();
-        if (
-            !product ||
-            !price ||
-            !quantity ||
-            !desc ||
-            !measure ||
-            !expiredDate ||
-            product === "" ||
-            price === 0 ||
-            quantity === 0 ||
-            desc === "" ||
-            measure === "" ||
-            expiredDate <= new Date(Date.now())
-        ) {
-            changeSnackbarValues({
-                content: "Vui lòng nhập đầy đủ các thông tin cần thiết!",
-                type: "error",
-                isToggle: true,
-            });
-            return;
-        }
-        changeConfirmationModalValues({
-            title: "Bạn chắc chắn muốn tạo một yêu cầu mua nông sản mới với những thông tin này ? Bạn sẽ không thể chỉnh sửa thông tin khi người quản lý duyệt yêu cầu này!",
-            isToggle: true,
-            type: "newBuyingRequest",
-        });
-    };
-
-    const confirmBuyingRequest = (event: SyntheticEvent) => {
+    const handleUpdateRequest = (event: SyntheticEvent, type: TransactionType) => {
         event.preventDefault();
         changeConfirmationModalValues({
-            title: "Bạn chắc chắn muốn duyệt yêu cầu này ?",
+            title: "Bạn chắc chắn muốn thay đổi thông tin của yêu cầu này ?",
             isToggle: true,
-            type: "confirmBuyingRequest",
+            type: type === "selling" ? "updateSellingRequest" : "updateBuyingRequest",
         });
     };
 
@@ -224,24 +213,22 @@ const AddNewRequestModal = () => {
             open={isToggleCreateNewRequestModal}
             onClose={() => {
                 changeToggleCreateNewRequestModal(false);
-                resetField();
+                resetField(type);
             }}
             aria-labelledby="unstyled-modal-title"
             aria-describedby="unstyled-modal-description"
         >
             <Box className="product-type-modal scrollable" p={4} pr={2} pl={2}>
                 <Typography variant="h5" component="h2" textAlign="center">
-                    Yêu cầu mua nông sản mới
+                    Yêu cầu {type === "buying" ? "mua" : "bán"} nông sản mới
                 </Typography>
                 <Box mt={4} mb={4} />
                 <form
                     onSubmit={event => {
-                        submitType === "confirmBuyingRequest"
-                            ? confirmBuyingRequest(event)
-                            : createNewBuyingRequest(event);
+                        handleUpdateRequest(event, type);
                     }}
                 >
-                    <FormLabel children={<Typography>Tên nông sản / sản phẩm nông nghiệp(*)</Typography>} />
+                    <FormLabel children={<Typography>Tên loại nông sản / sản phẩm nông nghiệp(*)</Typography>} />
                     <Box mt={2} mb={2} />
                     <FormControl fullWidth>
                         <InputLabel id="product-type-selector">Chọn</InputLabel>
@@ -256,6 +243,18 @@ const AddNewRequestModal = () => {
                             {renderProductSelector()}
                         </Select>
                     </FormControl>
+                    <Box mt={2} mb={2} />
+                    <FormLabel htmlFor="product-price" children={<Typography>Tên nông sản / sản phẩm(*)</Typography>} />
+                    <TextField
+                        id="product-title"
+                        fullWidth
+                        helperText="Tên nông sản không được để trống"
+                        autoComplete="off"
+                        onChange={event => {
+                            handleOnChangeInputField(event, "title");
+                        }}
+                        value={productName}
+                    />
                     <Box mt={2} mb={2} />
                     <FormLabel htmlFor="product-price" children={<Typography>Giá đề nghị(*)</Typography>} />
                     <TextField
@@ -272,7 +271,7 @@ const AddNewRequestModal = () => {
                     <Box mt={2} mb={2} />
                     <Grid display="flex" container>
                         <Grid item md={9}>
-                            <FormLabel htmlFor="product-quantity" children={<Typography>Số lượng mua(*)</Typography>} />
+                            <FormLabel htmlFor="product-quantity" children={<Typography>Số lượng(*)</Typography>} />
                             <TextField
                                 id="product-quantity"
                                 type="number"
@@ -321,11 +320,20 @@ const AddNewRequestModal = () => {
                     <Box mt={2} mb={2} />
                     {renderImageReview()}
                     <Box mt={2} mb={2} />
-                    <FormLabel children={<Typography>Thời gian hết hạn(*) </Typography>} />
+                    <FormLabel
+                        children={<Typography>Giao hàng {type === "buying" ? "trước ngày" : "từ"}(*)</Typography>}
+                    />
+                    <Box p={1}>
+                        <Typography variant="caption" style={{ opacity: 0.6 }}>
+                            Thời gian giao hàng hàng phải lớn hơn thời gian hiện tại ít nhất 2 ngày (1 ngày trước khi
+                            giao hàng, yêu cầu sẽ được đóng để nhân viên có thời gian chuẩn bị, mặc định là lớn hơn 2
+                            ngày).
+                        </Typography>
+                    </Box>
                     <Box mt={2} mb={2} />
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DateTimePicker
-                            label="Ngày hết hạn"
+                            label={type === "buying" ? "Ngày nhận hàng" : "Ngày giao hàng"}
                             inputFormat="dd/MM/yyyy HH:mm:ss"
                             value={expiredDate}
                             onChange={value => pickDate(value)}
@@ -333,11 +341,40 @@ const AddNewRequestModal = () => {
                         />
                         <Box mt={2} mb={2} />
                     </LocalizationProvider>
+                    <FormLabel
+                        children={<Typography>{type === "buying" ? "Giao đến(*)" : "Lấy hàng tại(*)"}</Typography>}
+                    />
+                    <Box mt={2} mb={2} />
+                    <FormControl fullWidth>
+                        <InputLabel id="address-selector">
+                            {type === "buying" ? "Địa chỉ giao hàng" : "Địa chỉ"}
+                        </InputLabel>
+                        <Select
+                            labelId="address-selector"
+                            id="address-selector-select"
+                            value={address}
+                            onChange={event => {
+                                selectTransactionAddress(event);
+                            }}
+                        >
+                            <MenuItem value="default">-- Chọn địa chỉ --</MenuItem>
+                            {renderTransactionAddressSelector()}
+                        </Select>
+                    </FormControl>
+                    <Button
+                        variant="contained"
+                        color="info"
+                        onClick={() => {
+                            changeToggleOnAddNewAddressModalStatus();
+                        }}
+                    >
+                        Thêm địa chỉ mới
+                    </Button>
                     <Box mt={1} mb={7} />
                     <Grid container justifyContent="flex-end">
                         <Grid>
                             <Button variant="contained" color="success" type="submit">
-                                {submitType === "newBuyingRequest" ? "Lưu" : "Duyệt yêu cầu"}
+                                Cập nhật
                             </Button>
                         </Grid>
                         &nbsp;
@@ -346,7 +383,7 @@ const AddNewRequestModal = () => {
                                 variant="contained"
                                 color="warning"
                                 onClick={() => {
-                                    resetField();
+                                    resetField(type);
                                 }}
                             >
                                 Huỷ
@@ -359,4 +396,4 @@ const AddNewRequestModal = () => {
     );
 };
 
-export default AddNewRequestModal;
+export default UpdateRequestModal;

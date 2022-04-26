@@ -44,6 +44,21 @@ const NavigationBar: React.FC = () => {
                     ]}
                     url="request"
                 />
+                {userRole === "consummer" ? (
+                    <NavigationSubItemContainer
+                        parentIcon={CgUserList}
+                        parentTitle="Yêu cầu của bạn"
+                        subItems={[
+                            { icon: ImUserTie, title: "Yêu cầu mua", url: "buying" },
+                            { icon: SiCodechef, title: "Yêu cầu bán", url: "selling" },
+                            { icon: ImUserTie, title: "Yêu cầu mua tới người dùng khác", url: "buying_subrequest" },
+                            { icon: SiCodechef, title: "Yêu cầu bán tới người dùng khác", url: "selling_subrequest" },
+                        ]}
+                        url="my_request"
+                    />
+                ) : (
+                    <></>
+                )}
                 {userRole === "system_manager" ? (
                     <NavigationSubItemContainer
                         parentIcon={CgUserList}
@@ -69,16 +84,15 @@ const NavigationBar: React.FC = () => {
                 ) : (
                     <></>
                 )}
-                {userRole === "manager" || userRole === "packing_staff" || userRole === "shipper" ? (
-                    <NavigationItem icon={FaFileInvoiceDollar} title="Đơn đặt hàng" url="order" isSubItem={false} />
-                ) : (
-                    <></>
-                )}
-                {userRole === "manager" ? (
-                    <NavigationItem icon={FaOpencart} title="Báo cáo" url="authentication/login" isSubItem={false} />
-                ) : (
-                    <></>
-                )}
+                <NavigationSubItemContainer
+                    parentIcon={FaFileInvoiceDollar}
+                    parentTitle="Đơn đặt hàng"
+                    subItems={[
+                        { icon: FaOpencart, title: "Mua hàng", url: "buying_dashboard" },
+                        { icon: FaOpencart, title: "Bán hàng", url: "selling_dashboard" },
+                    ]}
+                    url="order"
+                />
             </div>
             <div className="navbar-subcontainer">
                 <div className="navbar-subtitle">Others</div>

@@ -12,7 +12,8 @@ import ChatContextProvier from "../src/context/ChatContext";
 import UserContextProvider from "../src/context/UserContext";
 import UploadFileContextProvider from "../src/context/UploadFileContext";
 import ProductContextProvider from "../src/context/ProductContext";
-import BuyingRequestContextProvider from "../src/context/BuyingRequestContext";
+import RequestContextProvider from "../src/context/RequestContext";
+import OrderContextProvider from "../src/context/OrderContext";
 /**
  * Main page.
  * @param {ReactNode} Component is the app's component.
@@ -79,9 +80,11 @@ function MyApp({ Component, pageProps }: AppProps) {
                                 <ProductTypeContextProvider>
                                     <ProductContextProvider>
                                         <ChatContextProvier>
-                                            <BuyingRequestContextProvider>
-                                                <Component {...pageProps} />
-                                            </BuyingRequestContextProvider>
+                                            <RequestContextProvider>
+                                                <OrderContextProvider>
+                                                    <Component {...pageProps} />
+                                                </OrderContextProvider>
+                                            </RequestContextProvider>
                                         </ChatContextProvier>
                                     </ProductContextProvider>
                                 </ProductTypeContextProvider>

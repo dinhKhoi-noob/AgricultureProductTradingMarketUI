@@ -1,10 +1,11 @@
 interface layoutReducerAction {
-    type: "loading";
+    type: "loading" | "changeOnSellingPageStatus";
     payload: boolean;
 }
 
 export interface layoutReducerState {
     onLoading: boolean;
+    onSellingPage: boolean;
 }
 
 export const layoutReducer = (state: layoutReducerState, action: layoutReducerAction) => {
@@ -14,6 +15,11 @@ export const layoutReducer = (state: layoutReducerState, action: layoutReducerAc
             return {
                 ...state,
                 onLoading: payload,
+            };
+        case "changeOnSellingPageStatus":
+            return {
+                ...state,
+                onSellingPage: payload,
             };
         default:
             return state;

@@ -6,7 +6,7 @@ import React, { createContext, ReactNode, SyntheticEvent, useContext, useEffect,
 import Cookie from "universal-cookie";
 import { LoginUserType } from "../../pages/authentication/login";
 import { RegisterUserType } from "../../pages/authentication/register/default";
-import { authReducer, AuthReducerState } from "../reducer/authReducer";
+import { authReducer, AuthReducerState, UserAddressValue } from "../reducer/authReducer";
 import socket from "../socket";
 import { LayoutContext } from "./LayoutContext";
 import { InterestItemValueInitializer } from "./ProductTypeContext";
@@ -74,6 +74,7 @@ interface AuthContextDefault {
     currentUser: RegisterUserType;
     userRole: string;
     userInfo: UserInfomationInitializer;
+    addressList: UserAddressValue[];
     changeWarningStatus: (type: WarningFieldName, value: boolean) => void;
     setCookie: () => void;
     checkCookie: () => boolean;
@@ -98,6 +99,8 @@ interface AuthContextDefault {
     changeUserInformation: (user: UserInfomationInitializer) => void;
     getUserInformation: () => void;
     fillUserInformationOnEditing: () => void;
+    renderUserAddress: () => void;
+    addNewAddress: (address: string, uid: string) => void;
 }
 
 export const AuthContext = createContext<AuthContextDefault>({
@@ -144,6 +147,7 @@ export const AuthContext = createContext<AuthContextDefault>({
         role: "",
         loginMethod: "",
     },
+    addressList: [],
     changeWarningStatus: () => null,
     setCookie: () => null,
     checkCookie: () => false,
@@ -162,6 +166,8 @@ export const AuthContext = createContext<AuthContextDefault>({
     changeUserInformation: () => null,
     getUserInformation: () => null,
     fillUserInformationOnEditing: () => null,
+    renderUserAddress: () => null,
+    addNewAddress: () => null,
 });
 
 const AuthContextProvider = ({ children }: AuthContextProps) => {
@@ -189,6 +195,7 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
             avatar: "",
             loginMethod: "",
         },
+        addressList: [],
     };
     const [loadSelector, setLoadSelector] = useState(false);
     const [cities, setCities] = useState([]);
@@ -248,14 +255,12 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
 
     useEffect(() => {
         if (router.pathname === "/authentication/profile" && !loadSelector) {
-            console.log(1);
             renderDistrictEditingSelector();
         }
     }, [districtSelection]);
 
     useEffect(() => {
         if (router.pathname === "/authentication/profile" && !loadSelector) {
-            console.log(2);
             renderWardEditingSelector();
             setLoadSelector(true);
         }
@@ -263,7 +268,6 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
 
     const checkCookie = () => {
         const uid = cookie.get("uid");
-        console.log(uid);
         if (uid) {
             return true;
         }
@@ -730,6 +734,47 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         }
     };
 
+    const renderUserAddress = async () => {
+        try {
+            const id = cookie.get("uid");
+            console.log(`${host}/api/address/${id}`);
+            const response = await axios.get(`${host}/api/address/${id}`);
+            const result: any[] = response.data.result;
+            if (result) {
+                const mappedAddressList: UserAddressValue[] = result.map((value: any) => {
+                    const { id, address } = value;
+                    return {
+                        id,
+                        address,
+                    };
+                });
+                dispatch({ type: "loadAddressList", payload: mappedAddressList });
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                changeSnackbarValues({ content: error.response?.data.message, type: "error", isToggle: true });
+                return;
+            }
+            changeSnackbarValues({ content: "Lỗi hệ thống", type: "error", isToggle: true });
+        }
+    };
+
+    const addNewAddress = async (address: string, uid: string) => {
+        try {
+            console.log(address);
+            await axios.post(`${host}/api/address/${uid}`, { address });
+            changeLoadingStatus(false);
+            renderUserAddress();
+        } catch (error) {
+            changeLoadingStatus(false);
+            if (axios.isAxiosError(error)) {
+                changeSnackbarValues({ content: error.response?.data.message, type: "error", isToggle: true });
+                return;
+            }
+            changeSnackbarValues({ content: "Lỗi hệ thống", type: "error", isToggle: true });
+        }
+    };
+
     const authContextValue = {
         cities,
         districtSelection,
@@ -739,6 +784,7 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         currentUser,
         userRole: authState.userRole,
         userInfo: authState.userInfo,
+        addressList: authState.addressList,
         changeWarningStatus,
         dispatch,
         setCookie,
@@ -758,6 +804,8 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         changeUserInformation,
         getUserInformation,
         fillUserInformationOnEditing,
+        renderUserAddress,
+        addNewAddress,
     };
     return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };
