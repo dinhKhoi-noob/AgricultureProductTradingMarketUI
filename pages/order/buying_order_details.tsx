@@ -7,7 +7,7 @@ import {
     TimelineOppositeContent,
     TimelineSeparator,
 } from "@mui/lab";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, Chip, Grid, Typography } from "@mui/material";
 import { format } from "date-fns";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
@@ -22,6 +22,8 @@ import OrderButtonGroup from "../../src/components/order/OrderButtonGroup";
 import { AuthContext } from "../../src/context/AuthContext";
 import ConfirmationModal from "../../src/components/layouts/ConfirmationModal";
 import Progress from "../../src/components/layouts/Progress";
+import RatingList from "../../src/components/order/RatingList";
+import NumberFormat from "react-number-format";
 
 const BuyingOrderDetails = () => {
     const router = useRouter();
@@ -30,18 +32,23 @@ const BuyingOrderDetails = () => {
         orderDetails,
         currentOrder,
         currentSubOrders,
+        ratingList,
         loadSpecificRootOrder,
         changeCurrentOrderInformation,
         checkStep,
+        loadRatingList,
+        convertOrderStatus,
     } = useContext(OrderContext);
+    const formatDateString = "dd/MM/yyyy HH:mm:ss";
+    const [subOrdersDisplay, setSubOrdersDisplay] = useState<any[]>([]);
     const { userInfo, getUserInformation } = useContext(AuthContext);
     const [steps, setSteps] = useState<any[]>([]);
     const orderColumns: GridColDef[] = [
         { field: "id", headerName: "id", width: 100 },
         { field: "productName", headerName: "Tên nông sản", width: 150 },
-        { field: "price", headerName: "Giá", width: 100 },
-        { field: "quantity", headerName: "Số lượng", width: 100 },
-        { field: "total", headerName: "Tổng cộng", width: 100 },
+        { field: "price", headerName: "Giá", width: 100, renderCell: params => params.value },
+        { field: "quantity", headerName: "Số lượng", width: 100, renderCell: params => params.value },
+        { field: "total", headerName: "Tổng cộng", width: 100, renderCell: params => params.value },
         {
             field: orderDetails?.order.transactionType === "selling" ? "requestUsername" : "subrequestUsername",
             headerName: "Nhận hàng từ",
@@ -55,7 +62,6 @@ const BuyingOrderDetails = () => {
         { field: "expiredDate", headerName: "Ngày nhận hàng", width: 200 },
         { field: "dateCompletedOrder", headerName: "Ngày giao hàng", width: 200 },
         { field: "status", headerName: "Trạng thái", width: 200, renderCell: params => params.value },
-        { field: "transactionType", headerName: "Loại giao dịch", width: 150 },
         {
             field: "view",
             headerName: "",
@@ -103,6 +109,9 @@ const BuyingOrderDetails = () => {
                 subrequestId,
                 subrequestUserId,
             } = order;
+            if (status === "confirmed") {
+                loadRatingList(requestId, "request");
+            }
             const formatDateString = "dd/MM/yyyy HH:mm:ss";
             const stepsValue: StepValueInitializer[] = [
                 {
@@ -204,6 +213,66 @@ const BuyingOrderDetails = () => {
         }
     }, [orderDetails]);
 
+    useEffect(() => {
+        console.log(ratingList);
+    }, [ratingList]);
+
+    useEffect(() => {
+        if (currentSubOrders.length > 0) {
+            const mappedSubOrders = currentSubOrders.map((order: OrderValueInitializer) => {
+                const {
+                    orderConfirmedDate,
+                    dateCompletedOrder,
+                    expiredDate,
+                    orderCreatedDate,
+                    status,
+                    price,
+                    quantity,
+                    measure,
+                    total,
+                } = order;
+                return {
+                    ...order,
+                    price: (
+                        <NumberFormat
+                            value={price}
+                            displayType="text"
+                            thousandSeparator={true}
+                            suffix="VND"
+                        ></NumberFormat>
+                    ),
+                    quantity: (
+                        <NumberFormat
+                            value={quantity}
+                            displayType="text"
+                            thousandSeparator={true}
+                            suffix={measure}
+                        ></NumberFormat>
+                    ),
+                    total: (
+                        <NumberFormat
+                            value={total}
+                            displayType="text"
+                            thousandSeparator={true}
+                            suffix="VND"
+                        ></NumberFormat>
+                    ),
+                    orderConfirmedDate: format(new Date(orderConfirmedDate), formatDateString),
+                    dateCompletedOrder: format(new Date(dateCompletedOrder), formatDateString),
+                    expiredDate: format(new Date(expiredDate), formatDateString),
+                    orderCreatedDate: format(new Date(orderCreatedDate), formatDateString),
+                    status: (
+                        <Chip
+                            label={convertOrderStatus(status).convertedStatus}
+                            color={convertOrderStatus(status).isDone ? "success" : "warning"}
+                        />
+                    ),
+                };
+            });
+            setSubOrdersDisplay(mappedSubOrders);
+        }
+    }, [currentSubOrders]);
+
     const renderTimeline = () => {
         return steps.map((step: StepValueInitializer, index: number) => {
             const { by, color, dateCompleted, dateCreated, icon, name, process } = step;
@@ -256,30 +325,31 @@ const BuyingOrderDetails = () => {
             <ConfirmationModal />
             <Progress />
             <Typography variant="h3" textAlign="center">
-                Chi tiết đơn hàng (ROOTB)
+                Chi tiết đơn hàng
             </Typography>
             <Grid container justifyContent="center">
                 <Grid item md={6} sm={12}>
                     <OrderInformation order={currentOrder} />
-                    <OrderButtonGroup
-                        id={currentOrder?.id}
-                        status={currentOrder?.status}
-                        role={userInfo?.role}
-                        isRoot={true}
-                        type="buying"
-                        requestUserId={currentOrder?.requestUserId}
-                        subrequestUserId={currentOrder?.subrequestUserId}
-                        userId={userInfo?.id}
-                    />
                 </Grid>
                 <Grid item md={6} sm={12}>
                     <Timeline position="alternate">{renderTimeline()}</Timeline>
                 </Grid>
             </Grid>
+            <OrderButtonGroup
+                id={currentOrder?.id}
+                status={currentOrder?.status}
+                role={userInfo?.role}
+                isRoot={true}
+                type="buying"
+                requestUserId={currentOrder?.requestUserId}
+                subrequestUserId={currentOrder?.subrequestUserId}
+                userId={userInfo?.id}
+                subOrders={currentSubOrders}
+            />
             <Box p={4}>
                 <DataGrid
                     getRowId={row => row.id}
-                    rows={currentSubOrders}
+                    rows={subOrdersDisplay}
                     columns={orderColumns}
                     disableSelectionOnClick
                     autoHeight
@@ -305,6 +375,7 @@ const BuyingOrderDetails = () => {
                     pagination
                 />
             </Box>
+            {currentOrder?.status === "confirmed" ? <RatingList /> : <></>}
         </>
     );
 };

@@ -123,7 +123,7 @@ const SearchResultPage = () => {
         return () => {
             cookie.remove("search");
         };
-    }, [targetDateBegin, router.query["search"]]);
+    }, [router.query["search"]]);
 
     useEffect(() => {
         let calculateDate = targetDateBegin;
@@ -237,18 +237,16 @@ const SearchResultPage = () => {
                         : filteredByDateBuyingRequest
                               .map(request => request.price)
                               .reduce((prev, next) => prev + next) / filteredByDateBuyingRequest.length;
-                const sellingRequestQuantity =
-                    filteredByDateSellingRequest.length === 0
-                        ? 0
-                        : filteredByDateSellingRequest
-                              .map(request => request.quantity)
-                              .reduce((prev, next) => prev + next);
-                const buyingRequestQuantity =
-                    filteredByDateBuyingRequest.length === 0
-                        ? 0
-                        : filteredByDateBuyingRequest
-                              .map(request => request.quantity)
-                              .reduce((prev, next) => prev + next);
+                const sellingRequestQuantity = filteredByDateSellingRequest.length
+                    ? filteredByDateSellingRequest
+                          .map(request => request.quantity + request.process)
+                          .reduce((prev, next) => prev + next)
+                    : 0;
+                const buyingRequestQuantity = filteredByDateBuyingRequest.length
+                    ? filteredByDateBuyingRequest
+                          .map(request => request.quantity + request.process)
+                          .reduce((prev, next) => prev + next)
+                    : 0;
                 const buyingSubrequestSuccess = filteredByDateBuyingSubrequest
                     .filter(request => request.status === "success")
                     .map(request => request.price);
@@ -362,7 +360,7 @@ const SearchResultPage = () => {
         });
         setLineChartValues(transitoryLineChartValues);
         transitoryLineChartValues = [];
-    }, [searchResult.length]);
+    }, [searchResult]);
     const renderData = () => {
         return lineChartValues.map((item: PairData, index: number) => {
             return (

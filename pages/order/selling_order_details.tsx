@@ -22,6 +22,7 @@ import OrderButtonGroup from "../../src/components/order/OrderButtonGroup";
 import { AuthContext } from "../../src/context/AuthContext";
 import ConfirmationModal from "../../src/components/layouts/ConfirmationModal";
 import Progress from "../../src/components/layouts/Progress";
+import RatingList from "../../src/components/order/RatingList";
 
 const SellingOrderDetails = () => {
     const router = useRouter();
@@ -31,10 +32,12 @@ const SellingOrderDetails = () => {
         orderDetails,
         currentOrder,
         currentSubOrders,
+        ratingList,
         loadSpecificRootOrder,
         changeCurrentOrderInformation,
         convertOrderStatus,
         checkStep,
+        loadRatingList,
     } = useContext(OrderContext);
     const [steps, setSteps] = useState<any[]>([]);
     const [subOrdersDisplay, setSubOrdersDisplay] = useState<any[]>([]);
@@ -58,7 +61,6 @@ const SellingOrderDetails = () => {
         { field: "expiredDate", headerName: "Ngày nhận hàng", width: 200 },
         { field: "dateCompletedOrder", headerName: "Ngày giao hàng", width: 200 },
         { field: "status", headerName: "Trạng thái", width: 200, renderCell: params => params.value },
-        { field: "transactionType", headerName: "Loại giao dịch", width: 150 },
         {
             field: "view",
             headerName: "",
@@ -107,6 +109,9 @@ const SellingOrderDetails = () => {
                 subrequestId,
                 subrequestUserId,
             } = order;
+            if (status === "confirmed") {
+                loadRatingList(requestId, "request");
+            }
             const formatDateString = "dd/MM/yyyy HH:mm:ss";
             const stepsValue: StepValueInitializer[] = [
                 {
@@ -230,6 +235,10 @@ const SellingOrderDetails = () => {
         }
     }, [currentSubOrders]);
 
+    useEffect(() => {
+        console.log(ratingList);
+    }, [ratingList]);
+
     const renderTimeline = () => {
         return steps.map((step: StepValueInitializer, index: number) => {
             const { by, color, dateCompleted, dateCreated, icon, name, process } = step;
@@ -288,21 +297,25 @@ const SellingOrderDetails = () => {
             <Grid container justifyContent="center">
                 <Grid item md={6} sm={12}>
                     <OrderInformation order={currentOrder} />
-                    <OrderButtonGroup
-                        id={currentOrder?.id}
-                        status={currentOrder?.status}
-                        role={userInfo?.role}
-                        isRoot={true}
-                        type="selling"
-                        requestUserId={currentOrder?.requestUserId}
-                        subrequestUserId={currentOrder?.subrequestUserId}
-                        userId={userInfo?.id}
-                    />
                 </Grid>
                 <Grid item md={6} sm={12}>
                     <Timeline position="alternate">{renderTimeline()}</Timeline>
                 </Grid>
             </Grid>
+            {currentOrder?.status !== "success" && (
+                <OrderButtonGroup
+                    id={currentOrder?.id}
+                    status={currentOrder?.status}
+                    role={userInfo?.role}
+                    isRoot={true}
+                    type="selling"
+                    requestUserId={currentOrder?.requestUserId}
+                    subrequestUserId={currentOrder?.subrequestUserId}
+                    userId={userInfo?.id}
+                    subOrders={currentSubOrders}
+                />
+            )}
+            <Box mt={5} />
             <Typography variant="h4" textAlign="center">
                 Đơn hàng thành phần
             </Typography>
@@ -335,6 +348,20 @@ const SellingOrderDetails = () => {
                     pagination
                 />
             </Box>
+            {currentOrder?.status === "success" && (
+                <OrderButtonGroup
+                    id={currentOrder?.id}
+                    status={currentOrder?.status}
+                    role={userInfo?.role}
+                    isRoot={true}
+                    type="selling"
+                    requestUserId={currentOrder?.requestUserId}
+                    subrequestUserId={currentOrder?.subrequestUserId}
+                    userId={userInfo?.id}
+                    subOrders={currentSubOrders}
+                />
+            )}
+            {currentOrder?.status === "confirmed" ? <RatingList /> : <></>}
         </>
     );
 };

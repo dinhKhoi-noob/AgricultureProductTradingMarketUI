@@ -2,6 +2,8 @@ import {
     OrderAssignmentValueInitializer,
     OrderConfirmationValue,
     OrderValueInitializer,
+    RatingInputValue,
+    RatingValueInitializer,
 } from "../context/OrderContext";
 
 export type OrderActionType =
@@ -19,7 +21,9 @@ export type OrderActionType =
     | "loadSellingComparingOrders"
     | "changeCurrentOrder"
     | "changeCurrentSubOrders"
-    | "changeCurrentOrderConfirmationValue";
+    | "changeCurrentOrderConfirmationValue"
+    | "setRatingList"
+    | "loadRatingList";
 
 export interface OrderReducerState {
     orderList: OrderValueInitializer[];
@@ -37,6 +41,8 @@ export interface OrderReducerState {
     deliveringOrders: any[];
     successOrders: any[];
     canceledOrders: any[];
+    inputRatingList: RatingInputValue[];
+    ratingList: RatingValueInitializer[];
 }
 
 interface OrderAction {
@@ -46,7 +52,9 @@ interface OrderAction {
         | any[]
         | OrderAssignmentValueInitializer
         | OrderValueInitializer
-        | OrderConfirmationValue;
+        | OrderConfirmationValue
+        | RatingInputValue[]
+        | RatingValueInitializer[];
 }
 
 export const orderReducer = (state: OrderReducerState, action: OrderAction) => {
@@ -127,6 +135,16 @@ export const orderReducer = (state: OrderReducerState, action: OrderAction) => {
             return {
                 ...state,
                 sellingComparingOrders: payload as OrderValueInitializer[],
+            };
+        case "setRatingList":
+            return {
+                ...state,
+                inputRatingList: payload as RatingInputValue[],
+            };
+        case "loadRatingList":
+            return {
+                ...state,
+                ratingList: payload as RatingValueInitializer[],
             };
         default:
             return state;

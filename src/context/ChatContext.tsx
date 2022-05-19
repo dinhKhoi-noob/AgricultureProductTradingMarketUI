@@ -7,6 +7,7 @@ export interface MessageValueResponseInitializer {
     sentBy: string;
     content: string;
     dateSent: Date;
+    files: string[];
 }
 
 export interface MessageValueInitializer {
@@ -23,7 +24,7 @@ interface ChatContextDefault {
     haveNewMessage: boolean;
     changeMessageList: (messages: MessageValueResponseInitializer[]) => void;
     loadMessages: (userId: string, roomId: string) => void;
-    addNewMessage: (message: MessageValueInitializer, roomId: string) => void;
+    addNewMessage: (message: MessageValueInitializer, roomId: string, files: string[]) => void;
 }
 
 export const ChatContext = createContext<ChatContextDefault>({
@@ -47,24 +48,26 @@ const ChatContextProvier = ({ children }: ChatContextProps) => {
         socket.emit("messages:load", { roomId, userId });
         socket.on("loadMessages:success", result => {
             const mappedMessages: MessageValueResponseInitializer[] = result.map((message: any) => {
-                const { content, date_created, sent_by, id } = message;
+                const { content, date_created, sent_by, id, files } = message;
+                console.log(message);
                 return {
                     id,
                     sentBy: sent_by,
                     content,
                     dateSent: new Date(date_created),
+                    files,
                 };
             });
             changeMessageList(mappedMessages);
         });
     };
 
-    const addNewMessage = (message: MessageValueInitializer, roomId: string) => {
-        if (message.content.trim().length === 0) {
+    const addNewMessage = (message: MessageValueInitializer, roomId: string, files: string[]) => {
+        if (message.content.trim().length === 0 && files.length === 0) {
             return;
         }
         setHaveNewMessage(!haveNewMessage);
-        socket.emit("newMessage:post", { roomId, message: message.content, files: [], sendBy: message.uid });
+        socket.emit("newMessage:post", { roomId, message: message.content, files, sendBy: message.uid });
     };
 
     const chatContextValue = {

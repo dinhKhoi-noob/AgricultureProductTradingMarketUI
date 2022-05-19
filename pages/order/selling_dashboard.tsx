@@ -1,15 +1,38 @@
 import { Box, Button, Chip, Typography } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../../src/context/AuthContext";
 import { OrderContext, OrderValueInitializer } from "../../src/context/OrderContext";
 import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
+import { DialAction } from "../../src/context/LayoutContext";
+import { GiFarmer } from "react-icons/gi";
+import { RiShipLine } from "react-icons/ri";
+import { VscPackage } from "react-icons/vsc";
+import { MdOutlineLocalShipping } from "react-icons/md";
+import { BsPatchCheck } from "react-icons/bs";
+import SpeedDialNavigator from "../../src/components/layouts/navigation_bar/SpeedDialNavigator";
 
 const SellingDashboard = () => {
     const cookie = new Cookies();
     const router = useRouter();
+    const preparingStageRef = useRef<HTMLInputElement | null>(null);
+    const carryingStageRef = useRef<HTMLInputElement | null>(null);
+    const packingStageRef = useRef<HTMLInputElement | null>(null);
+    const deliveringStageRef = useRef<HTMLInputElement | null>(null);
+    const successStageRef = useRef<HTMLInputElement | null>(null);
+    const actions: DialAction[] = [
+        {
+            icon: <GiFarmer />,
+            title: "Đang chuẩn bị/chờ giao hàng",
+            ref: preparingStageRef,
+        },
+        { icon: <RiShipLine />, title: "Đang nhận hàng/chờ đóng gói", ref: carryingStageRef },
+        { icon: <VscPackage />, title: "Đang đóng gói/chờ giao hàng", ref: packingStageRef },
+        { icon: <MdOutlineLocalShipping />, title: "Đang giao hàng", ref: deliveringStageRef },
+        { icon: <BsPatchCheck />, title: "Đã giao hàng", ref: successStageRef },
+    ];
     const { userInfo, getUserInformation } = useContext(AuthContext);
     const {
         orderList,
@@ -18,7 +41,7 @@ const SellingDashboard = () => {
         packagingOrders,
         deliveringOrders,
         successOrders,
-        canceledOrders,
+        // canceledOrders,
         loadAllOrders,
         storeOrders,
         convertOrderStatus,
@@ -63,11 +86,11 @@ const SellingDashboard = () => {
                     storeOrders("loadSuccessOrders", data);
                 }
                 break;
-            case "cancel":
-                if (!checkIsExistedData(canceledOrders, data)) {
-                    storeOrders("loadCanceledOrders", data);
-                }
-                break;
+            // case "cancel":
+            //     if (!checkIsExistedData(canceledOrders, data)) {
+            //         storeOrders("loadCanceledOrders", data);
+            //     }
+            //     break;
             default:
                 break;
         }
@@ -261,7 +284,7 @@ const SellingDashboard = () => {
         { field: "expiredDate", headerName: "Ngày nhận hàng", width: 200 },
         { field: "dateCompletedOrder", headerName: "Ngày giao hàng", width: 200 },
         { field: "status", headerName: "Trạng thái", width: 200, renderCell: params => params.value },
-        { field: "transactionType", headerName: "Loại giao dịch", width: 150 },
+
         {
             field: "view",
             headerName: "",
@@ -278,6 +301,7 @@ const SellingDashboard = () => {
 
     return (
         <Box>
+            <Box ref={preparingStageRef} />
             <Typography variant="h4" textAlign="center" margin={4}>
                 Đơn hàng bán ra
             </Typography>
@@ -311,6 +335,7 @@ const SellingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={carryingStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang nhận hàng / chờ đóng gói
             </Typography>
@@ -341,6 +366,7 @@ const SellingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={packingStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang đóng gói / chờ giao hàng
             </Typography>
@@ -371,6 +397,7 @@ const SellingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={deliveringStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang giao hàng
             </Typography>
@@ -401,6 +428,7 @@ const SellingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={successStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đã giao hàng
             </Typography>
@@ -431,7 +459,7 @@ const SellingDashboard = () => {
                     pagination
                 />
             </Box>
-            <Typography className="text-camel" variant="h5" margin={5} mb={0}>
+            {/* <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đã huỷ
             </Typography>
             <Box p={4}>
@@ -460,7 +488,8 @@ const SellingDashboard = () => {
                     rowsPerPageOptions={[5, 10, 20]}
                     pagination
                 />
-            </Box>
+            </Box> */}
+            <SpeedDialNavigator actions={actions} />
         </Box>
     );
 };

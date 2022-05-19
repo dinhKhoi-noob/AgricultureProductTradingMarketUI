@@ -1,7 +1,7 @@
 import { Box, Chip, Grid, Typography } from "@mui/material";
 import { compareAsc, formatDistance, formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     ModalProps,
     RequestContext,
@@ -18,6 +18,9 @@ import RequestModal from "../../../src/components/request/buying/RequestModal";
 import ConfirmationModal from "../../../src/components/layouts/ConfirmationModal";
 import NewAddressModal from "../../../src/components/auth/NewAddressModal";
 import Progress from "../../../src/components/layouts/Progress";
+import socket from "../../../src/socket";
+import { ChatContext } from "../../../src/context/ChatContext";
+import NumberFormat from "react-number-format";
 
 const SellingRequestForBuyingRequestDetails = () => {
     const {
@@ -30,8 +33,10 @@ const SellingRequestForBuyingRequestDetails = () => {
         changeModalInformation,
     } = useContext(RequestContext);
     const { userInfo, getUserInformation, renderUserAddress } = useContext(AuthContext);
+    const { loadMessages } = useContext(ChatContext);
     const cookie = new Cookies();
     const router = useRouter();
+    const [currentPid, setCurrentPid] = useState("");
 
     useEffect(() => {
         getAllSubrequest("buying");
@@ -40,7 +45,11 @@ const SellingRequestForBuyingRequestDetails = () => {
         const pid = typeof router.query["id"] === "string" ? router.query["id"] : cookie.get("pid");
         if (typeof pid === "string") {
             loadSpecificRequest(pid, true, "buying");
+            setCurrentPid(pid);
         }
+        return () => {
+            socket.emit("leave:discuss", currentPid);
+        };
     }, []);
 
     useEffect(() => {
@@ -83,6 +92,22 @@ const SellingRequestForBuyingRequestDetails = () => {
         changeModalInformation(modalValues);
     }, [currentTargetRequest, subrequests]);
 
+    useEffect(() => {
+        if (userInfo && userInfo.id !== "" && currentPid !== "" && currentSubrequest.createdBy !== "") {
+            console.log(userInfo, currentPid);
+            socket.auth = { uid: userInfo.id };
+            socket.connect();
+            socket.emit("join:discuss", {
+                roomId: currentPid,
+                firstUser: userInfo.id,
+                secondUser: currentSubrequest.createdBy,
+                userId: userInfo.username,
+            });
+            loadMessages(userInfo.id, currentPid);
+            loadSpecificBuyingRequest(currentSubrequest.requestId);
+        }
+    }, [userInfo, currentSubrequest]);
+
     return (
         <>
             <RequestModal type="selling" submitType="edit" />
@@ -103,7 +128,7 @@ const SellingRequestForBuyingRequestDetails = () => {
                     </Box>
                     <Box display="flex" justifyContent="space-between" mt={2} mb={2}>
                         <Typography fontWeight="bold">Yêu cầu tới:</Typography>&nbsp;
-                        <Typography>{currentSubrequest.username}</Typography>
+                        <Typography>{currentSubrequest.customerName}</Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mt={2} mb={2}>
                         <Typography fontWeight="bold">Tên sản phẩm:</Typography>&nbsp;
@@ -157,13 +182,35 @@ const SellingRequestForBuyingRequestDetails = () => {
                     )}
                     <Box display="flex" justifyContent="space-between" mt={2} mb={2}>
                         <Typography fontWeight="bold">Giá đề nghị:</Typography>&nbsp;
-                        <Typography>{currentSubrequest.price}</Typography>
+                        <Typography>
+                            <NumberFormat
+                                value={currentSubrequest.price}
+                                displayType="text"
+                                thousandSeparator={true}
+                                suffix="VND"
+                            />
+                        </Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mt={2} mb={2}>
                         <Typography fontWeight="bold">Số lượng:</Typography>&nbsp;
                         <Typography>
-                            {currentSubrequest.quantity}
-                            {currentSubrequest.measure}
+                            <NumberFormat
+                                value={currentSubrequest.quantity}
+                                displayType="text"
+                                thousandSeparator={true}
+                                suffix={currentSubrequest.measure}
+                            />
+                        </Typography>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between" mt={2} mb={2}>
+                        <Typography fontWeight="bold">Tổng cộng:</Typography>&nbsp;
+                        <Typography>
+                            <NumberFormat
+                                value={currentSubrequest.quantity * currentSubrequest.price}
+                                displayType="text"
+                                thousandSeparator={true}
+                                suffix="VND"
+                            />
                         </Typography>
                     </Box>
                     <Box mt={2} mb={2}>

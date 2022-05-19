@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect, SyntheticEvent } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 import { GiEntryDoor } from "react-icons/gi";
-import { RiSearch2Line, RiNotification4Fill } from "react-icons/ri";
-import { AiFillMessage } from "react-icons/ai";
+import { RiSearch2Line } from "react-icons/ri";
+// import { AiFillMessage } from "react-icons/ai";
 import { RiMenuLine } from "react-icons/ri";
 import { animated, Transition, useSpring } from "react-spring";
 import NotificationCard from "./top_navigation_bar/NotificationCard";
@@ -31,7 +31,7 @@ const TopNavigationBar = () => {
 
     const redirectToSearchPage = (event: SyntheticEvent) => {
         event.preventDefault();
-        setIsToggleOnSearchBtn(false);
+        console.log(2);
         router.push(`search_result?search=${searchString}`);
         cookie.set("search", searchString);
     };
@@ -76,7 +76,7 @@ const TopNavigationBar = () => {
                                 }}
                             />
                         </animated.div>
-                        <button className="top-navbar__slide-in__btn" type="submit">
+                        <button className="top-navbar__slide-in__btn" type="button">
                             <RiSearch2Line />
                         </button>
                     </form>
@@ -90,12 +90,7 @@ const TopNavigationBar = () => {
                     redirectToSearchPage(event);
                 }}
             >
-                <div
-                    className="top-navbar-toggle-navbar-btn"
-                    onClick={event => {
-                        redirectToSearchPage(event);
-                    }}
-                >
+                <div className="top-navbar-toggle-navbar-btn">
                     <RiMenuLine />
                 </div>
                 {smMatched ? (
@@ -118,8 +113,8 @@ const TopNavigationBar = () => {
                     <>
                         <button
                             className="top-navbar-search-btn top-navbar-search-btn--rounded"
-                            onClick={event => {
-                                redirectToSearchPage(event);
+                            onClick={() => {
+                                setIsToggleOnSearchBtn(true);
                             }}
                         >
                             <RiSearch2Line />
@@ -129,7 +124,7 @@ const TopNavigationBar = () => {
             </form>
             <div className="top-navbar-right-section">
                 <div className="wrapper pos-relative">
-                    <div
+                    {/* <div
                         className="top-navbar-notification-section"
                         onClick={() => {
                             const duration = isToggleOnMessage || isToggleOnUser ? 500 : 0;
@@ -142,7 +137,7 @@ const TopNavigationBar = () => {
                     >
                         <RiNotification4Fill className="top-navbar-notification-btn" />
                         <div className="top-navbar-notification-announcement"></div>
-                    </div>
+                    </div> */}
                     <Transition
                         native
                         items={isToggleOnNotification}
@@ -207,7 +202,7 @@ const TopNavigationBar = () => {
                     </Transition>
                 </div>
                 <div className="wrapper pos-relative">
-                    <div
+                    {/* <div
                         className="top-navbar-notification-section"
                         onClick={() => {
                             const duration = isToggleOnNotification || isToggleOnUser ? 500 : 0;
@@ -220,7 +215,7 @@ const TopNavigationBar = () => {
                     >
                         <AiFillMessage className="top-navbar-notification-btn" />
                         <div className="top-navbar-notification-announcement"></div>
-                    </div>
+                    </div> */}
                     <Transition
                         native
                         items={isToggleOnMessage}

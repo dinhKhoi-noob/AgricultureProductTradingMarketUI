@@ -44,7 +44,7 @@ import {
     LineElement,
     Title,
 } from "chart.js";
-import { Doughnut, Line } from "react-chartjs-2";
+import { Line, Pie } from "react-chartjs-2";
 import { DatePicker, LocalizationProvider } from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import viLocale from "date-fns/locale/vi";
@@ -131,6 +131,20 @@ const Home: NextPage = () => {
                 text: "Đơn hàng mua vào",
             },
         },
+
+        yAxes: [
+            {
+                ticks: {
+                    callback: function (value: any) {
+                        if (Number.isInteger(value)) {
+                            return value;
+                        }
+                    },
+                    beginAtZero: true,
+                    stepSize: 1,
+                },
+            },
+        ],
     };
     const sellingOrderLineChartOptions = {
         responsive: true,
@@ -143,6 +157,20 @@ const Home: NextPage = () => {
                 text: "Đơn hàng bán ra",
             },
         },
+
+        yAxes: [
+            {
+                ticks: {
+                    callback: function (value: any) {
+                        if (Number.isInteger(value)) {
+                            return value;
+                        }
+                    },
+                    beginAtZero: true,
+                    stepSize: 1,
+                },
+            },
+        ],
     };
     const { userInfo, getUserInformation } = useContext(AuthContext);
     const { buyingOrders, sellingOrders, loadOrderStatistic } = useContext(OrderContext);
@@ -154,12 +182,12 @@ const Home: NextPage = () => {
         getUnconfirmedRequests,
         getAllSubrequest,
     } = useContext(RequestContext);
-    const [stepDate, setStepDate] = useState(3);
+    const [stepDate, setStepDate] = useState(1);
     const [targetDateBegin, setTargetDateBegin] = useState<Date>(
-        new Date(new Date(currentDate).setDate(new Date(currentDate).getDate() - 30))
+        new Date(new Date(currentDate).setDate(new Date(currentDate).getDate() - 7))
     );
     const [targetRequestDateBegin, setTargetRequestDateBegin] = useState<Date>(
-        new Date(new Date(currentDate).setDate(new Date(currentDate).getDate() - 30))
+        new Date(new Date(currentDate).setDate(new Date(currentDate).getDate() - 7))
     );
     const [targetRequestDateEnd, setTargetRequestDateEnd] = useState<Date>(new Date(new Date(Date.now())));
     const [buyingOrderStatistic, setBuyingOrderStatistic] = useState<OrderStatisticValue | undefined>(undefined);
@@ -288,7 +316,7 @@ const Home: NextPage = () => {
             if (value === 3) {
                 setTargetDateBegin(new Date(new Date(currentDate).setDate(new Date(currentDate).getDate() - 30)));
             }
-            if (value === 10) {
+            if (value === 7) {
                 setTargetDateBegin(new Date(new Date(currentDate).setDate(new Date(currentDate).getDate() - 90)));
             }
             if (value === 30) {
@@ -351,7 +379,8 @@ const Home: NextPage = () => {
 
     useEffect(() => {
         const concatArray = buyingOrders.concat(sellingOrders);
-        if (buyingOrders.length > 0 && userInfo && userInfo.id.trim().length > 0 && concatArray.length > 0) {
+        console.log(concatArray);
+        if (userInfo && userInfo.id.trim().length > 0 && concatArray.length > 0) {
             const filterdOrders = concatArray.filter(
                 order =>
                     (order.transactionType === "buying" && order.requestUserId === userInfo.id) ||
@@ -359,6 +388,7 @@ const Home: NextPage = () => {
                     (userInfo.role !== "consummer" && order.transactionType === "buying")
             );
             setBuyingSucceedOrder(filterdOrders);
+            console.log("Not empty");
             const totalOrder = filterdOrders.length;
             const totalPreparingOrder = filterdOrders.filter(
                 order => order.status === "preparing" || order.status === "ready"
@@ -391,8 +421,20 @@ const Home: NextPage = () => {
                 totalPreparingOrder,
                 totalSuccessOrder,
             });
+        } else {
+            setBuyingOrderStatistic({
+                totalAmount: 0,
+                totalBudget: 0,
+                totalFee: 0,
+                totalDeliveringOrder: 0,
+                totalGrabbingOrder: 0,
+                totalOrder: 0,
+                totalPackingOrder: 0,
+                totalPreparingOrder: 0,
+                totalSuccessOrder: 0,
+            });
         }
-        if (sellingOrders.length > 0 && userInfo && userInfo.id.trim().length > 0 && concatArray.length > 0) {
+        if (userInfo && userInfo.id.trim().length > 0 && concatArray.length > 0) {
             const filterdOrders = concatArray.filter(
                 order =>
                     (order.transactionType === "selling" && order.requestUserId === userInfo.id) ||
@@ -400,6 +442,7 @@ const Home: NextPage = () => {
                     (userInfo.role !== "consummer" && order.transactionType === "selling")
             );
             setSellingSucceedOrder(filterdOrders);
+            console.log("Not empty");
             const totalOrder = filterdOrders.length;
             const totalPreparingOrder = filterdOrders.filter(
                 order => order.status === "preparing" || order.status === "ready"
@@ -432,6 +475,18 @@ const Home: NextPage = () => {
                 totalPreparingOrder,
                 totalSuccessOrder,
             });
+        } else {
+            setSellingOrderStatistic({
+                totalAmount: 0,
+                totalBudget: 0,
+                totalFee: 0,
+                totalDeliveringOrder: 0,
+                totalGrabbingOrder: 0,
+                totalOrder: 0,
+                totalPackingOrder: 0,
+                totalPreparingOrder: 0,
+                totalSuccessOrder: 0,
+            });
         }
     }, [buyingOrders, sellingOrders]);
 
@@ -444,23 +499,25 @@ const Home: NextPage = () => {
             .concat(unconfirmedRequests.filter(request => request.type === "buying"));
         const uniqueSellingRequestProductIds: { id: string; title: string }[] = [];
         const uniqueBuyingRequestProductIds: { id: string; title: string }[] = [];
-        if (confirmedRequests.length > 0) {
+        if (confirmedRequests.length > 0 || unconfirmedRequests.length > 0) {
             const totalConfirmedBuyingRequest = confirmedRequests.filter(request => request.type === "buying").length;
             const totalUnconfirmedBuyingRequest = unconfirmedRequests.filter(
                 request => request.type === "buying" && request.status !== "cancel"
             ).length;
-            const totalBuyingRequest = totalConfirmedBuyingRequest + totalUnconfirmedBuyingRequest;
             const totalCancelBuyingRequest =
                 confirmedRequests.filter(request => request.type === "buying" && request.status === "cancel").length +
                 unconfirmedRequests.filter(request => request.type === "buying" && request.status === "cancel").length;
+            const totalBuyingRequest =
+                totalConfirmedBuyingRequest + totalUnconfirmedBuyingRequest + totalCancelBuyingRequest;
             const totalConfirmedSellingRequest = confirmedRequests.filter(request => request.type === "selling").length;
             const totalUnconfirmedSellingRequest = unconfirmedRequests.filter(
                 request => request.type === "selling" && request.status !== "cancel"
             ).length;
-            const totalSellingRequest = totalConfirmedSellingRequest + totalUnconfirmedSellingRequest;
             const totalCancelSellingRequest =
                 confirmedRequests.filter(request => request.type === "selling" && request.status === "cancel").length +
                 unconfirmedRequests.filter(request => request.type === "selling" && request.status === "cancel").length;
+            const totalSellingRequest =
+                totalConfirmedSellingRequest + totalUnconfirmedSellingRequest + totalCancelSellingRequest;
             setBuyingRequestStatistic({
                 totalCancelRequest: totalCancelBuyingRequest,
                 totalConfirmedRequest: totalConfirmedBuyingRequest,
@@ -497,10 +554,24 @@ const Home: NextPage = () => {
                 transitoryBuyingStatisticArray.push(totalExisted);
                 transitoryBuyingLabelArray.push(item.title);
             });
+            console.log(transitorySellingStatisticArray, transitoryBuyingStatisticArray);
             setDataSellingArray(transitorySellingStatisticArray);
             setLabelSellingArray(transitorySellingLabelArray);
             setDataBuyingArray(transitoryBuyingStatisticArray);
             setLabelBuyingArray(transitoryBuyingLabelArray);
+        } else {
+            setBuyingRequestStatistic({
+                totalCancelRequest: 0,
+                totalConfirmedRequest: 0,
+                totalRequest: 0,
+                totalUnconfirmedRequest: 0,
+            });
+            setSellingRequestStatistic({
+                totalCancelRequest: 0,
+                totalConfirmedRequest: 0,
+                totalRequest: 0,
+                totalUnconfirmedRequest: 0,
+            });
         }
     }, [confirmedRequests, unconfirmedRequests]);
 
@@ -550,6 +621,7 @@ const Home: NextPage = () => {
                 );
                 const totalBuyingRequest = buyingSubrequest.length;
                 const totalSellingRequest = sellingSubrequest.length;
+                // console.log(buyingSucceedOrder, sellingSucceedOrder);
                 const successBuyingRequest = buyingSucceedOrder.filter(request => {
                     return (
                         compareAsc(new Date(request.orderCreatedDate), new Date(calculateDate)) === -1 &&
@@ -663,7 +735,7 @@ const Home: NextPage = () => {
             ],
             labels: orderLabelArray,
         });
-        console.log(buyingOrderDataArray, sellingOrderDataArray, orderLabelArray);
+        // console.log(buyingOrderDataArray, sellingOrderDataArray, orderLabelArray);
     }, [buyingOrderDataArray, sellingOrderDataArray, orderLabelArray]);
 
     useEffect(() => {
@@ -906,7 +978,21 @@ const Home: NextPage = () => {
                     <Typography marginTop={5} marginBottom={3} textAlign="center">
                         Yêu cầu mua
                     </Typography>
-                    <Doughnut data={buyingDoughnutChartValue} />
+                    <Pie
+                        options={{
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: "right",
+                                },
+                                title: {
+                                    display: true,
+                                    position: "top",
+                                },
+                            },
+                        }}
+                        data={buyingDoughnutChartValue}
+                    />
                 </Grid>
             </Grid>
             <Grid
@@ -1034,7 +1120,18 @@ const Home: NextPage = () => {
                         Yêu cầu bán
                     </Typography>
                     <Box width="100%">
-                        <Doughnut data={sellingDoughnutChartValue} />
+                        <Pie
+                            options={{
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: "right",
+                                    },
+                                },
+                                responsive: true,
+                            }}
+                            data={sellingDoughnutChartValue}
+                        />
                     </Box>
                 </Grid>
             </Grid>
@@ -1045,14 +1142,14 @@ const Home: NextPage = () => {
                 <Select
                     size="small"
                     value={stepDate}
-                    defaultValue={3}
+                    defaultValue={1}
                     onChange={event => {
                         changeStepDate(event);
                     }}
                 >
                     <MenuItem value={1}>7 ngày gần nhất</MenuItem>
                     <MenuItem value={3}>30 ngày gần nhất</MenuItem>
-                    <MenuItem value={10}>3 tháng</MenuItem>
+                    <MenuItem value={7}>3 tháng</MenuItem>
                     <MenuItem value={30}>1 năm</MenuItem>
                 </Select>
             </Box>
@@ -1091,6 +1188,39 @@ const Home: NextPage = () => {
                 justifyContent="center"
                 display={isClickOnSellingOrder ? "none" : "flex"}
             >
+                <Grid item>
+                    <Card
+                        sx={{
+                            width: 1050,
+                            height: 280,
+                            backgroundColor: "#4527a0",
+                            display: "flex",
+                            flexDirection: "column",
+                            color: "white",
+                            justifyContent: "space-between",
+                            margin: 1,
+                        }}
+                    >
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" width="100%">
+                                <Typography variant="h6" sx={{ width: "70%" }}>
+                                    Tổng tiền phải trả
+                                </Typography>
+                                <AiOutlineDollar fontSize={50} />
+                            </Box>
+                        </CardContent>
+                        <CardContent>
+                            <Typography variant="h4">
+                                <NumberFormat
+                                    value={buyingOrderStatistic ? buyingOrderStatistic.totalBudget : 0}
+                                    suffix="VND"
+                                    thousandSeparator={true}
+                                    displayType="text"
+                                />
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
                 <Grid item>
                     <Card
                         sx={{
@@ -1155,26 +1285,26 @@ const Home: NextPage = () => {
                         sx={{
                             width: 340,
                             height: 280,
-                            backgroundColor: "#4527a0",
+                            backgroundColor: "#37474f",
                             display: "flex",
                             flexDirection: "column",
-                            color: "white",
                             justifyContent: "space-between",
+                            color: "white",
                             margin: 1,
                         }}
                     >
                         <CardContent>
                             <Box display="flex" justifyContent="space-between" width="100%">
                                 <Typography variant="h6" sx={{ width: "70%" }}>
-                                    Tổng tiền phải trả
+                                    Tổng phí
                                 </Typography>
-                                <AiOutlineDollar fontSize={50} />
+                                <FaFileInvoiceDollar fontSize={50} />
                             </Box>
                         </CardContent>
                         <CardContent>
                             <Typography variant="h4">
                                 <NumberFormat
-                                    value={buyingOrderStatistic ? buyingOrderStatistic.totalBudget : 0}
+                                    value={buyingOrderStatistic ? buyingOrderStatistic.totalFee : 0}
                                     suffix="VND"
                                     thousandSeparator={true}
                                     displayType="text"
@@ -1185,39 +1315,6 @@ const Home: NextPage = () => {
                 </Grid>
                 <Collapse in={expandedOrder} timeout="auto" unmountOnExit>
                     <Grid container display="flex" alignItems="center" justifyContent="center">
-                        <Grid item>
-                            <Card
-                                sx={{
-                                    width: 340,
-                                    height: 280,
-                                    backgroundColor: "#37474f",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                    color: "white",
-                                    margin: 1,
-                                }}
-                            >
-                                <CardContent>
-                                    <Box display="flex" justifyContent="space-between" width="100%">
-                                        <Typography variant="h6" sx={{ width: "70%" }}>
-                                            Tổng phí
-                                        </Typography>
-                                        <FaFileInvoiceDollar fontSize={50} />
-                                    </Box>
-                                </CardContent>
-                                <CardContent>
-                                    <Typography variant="h4">
-                                        <NumberFormat
-                                            value={buyingOrderStatistic ? buyingOrderStatistic.totalFee : 0}
-                                            suffix="VND"
-                                            thousandSeparator={true}
-                                            displayType="text"
-                                        />
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
                         <Grid item>
                             <Card
                                 sx={{
@@ -1366,6 +1463,39 @@ const Home: NextPage = () => {
                 <Grid item>
                     <Card
                         sx={{
+                            width: 1050,
+                            height: 280,
+                            backgroundColor: "#4527a0",
+                            display: "flex",
+                            flexDirection: "column",
+                            color: "white",
+                            justifyContent: "space-between",
+                            margin: 1,
+                        }}
+                    >
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" width="100%">
+                                <Typography variant="h6" sx={{ width: "70%" }}>
+                                    Tổng tiền nhận được
+                                </Typography>
+                                <AiOutlineDollar fontSize={50} />
+                            </Box>
+                        </CardContent>
+                        <CardContent>
+                            <Typography variant="h4">
+                                <NumberFormat
+                                    value={sellingOrderStatistic ? sellingOrderStatistic.totalAmount : 0}
+                                    suffix="VND"
+                                    thousandSeparator={true}
+                                    displayType="text"
+                                />
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item>
+                    <Card
+                        sx={{
                             width: 340,
                             height: 280,
                             backgroundColor: "#9ccc65",
@@ -1427,26 +1557,26 @@ const Home: NextPage = () => {
                         sx={{
                             width: 340,
                             height: 280,
-                            backgroundColor: "#4527a0",
+                            backgroundColor: "#37474f",
                             display: "flex",
                             flexDirection: "column",
-                            color: "white",
                             justifyContent: "space-between",
+                            color: "white",
                             margin: 1,
                         }}
                     >
                         <CardContent>
                             <Box display="flex" justifyContent="space-between" width="100%">
                                 <Typography variant="h6" sx={{ width: "70%" }}>
-                                    Tổng tiền nhận được
+                                    Tổng phí
                                 </Typography>
-                                <AiOutlineDollar fontSize={50} />
+                                <FaFileInvoiceDollar fontSize={50} />
                             </Box>
                         </CardContent>
                         <CardContent>
                             <Typography variant="h4">
                                 <NumberFormat
-                                    value={sellingOrderStatistic ? sellingOrderStatistic.totalAmount : 0}
+                                    value={sellingOrderStatistic ? sellingOrderStatistic.totalFee : 0}
                                     suffix="VND"
                                     thousandSeparator={true}
                                     displayType="text"
@@ -1457,39 +1587,6 @@ const Home: NextPage = () => {
                 </Grid>
                 <Collapse in={expandedOrder} timeout="auto" unmountOnExit>
                     <Grid container display="flex" alignItems="center" justifyContent="center">
-                        <Grid item>
-                            <Card
-                                sx={{
-                                    width: 340,
-                                    height: 280,
-                                    backgroundColor: "#37474f",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                    color: "white",
-                                    margin: 1,
-                                }}
-                            >
-                                <CardContent>
-                                    <Box display="flex" justifyContent="space-between" width="100%">
-                                        <Typography variant="h6" sx={{ width: "70%" }}>
-                                            Tổng phí
-                                        </Typography>
-                                        <FaFileInvoiceDollar fontSize={50} />
-                                    </Box>
-                                </CardContent>
-                                <CardContent>
-                                    <Typography variant="h4">
-                                        <NumberFormat
-                                            value={sellingOrderStatistic ? sellingOrderStatistic.totalFee : 0}
-                                            suffix="VND"
-                                            thousandSeparator={true}
-                                            displayType="text"
-                                        />
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
                         <Grid item>
                             <Card
                                 sx={{
@@ -1650,12 +1747,12 @@ const Home: NextPage = () => {
             >
                 Xem thêm
             </Button>
-            <Grid container display={isClickOnSellingOrder ? "none" : "flex"}>
-                <Grid item md={6} sm={12}>
+            <Grid container>
+                <Grid item md={6} sm={12} display={isClickOnSellingOrder ? "none" : "flex"}>
                     <Line options={buyingOrderLineChartOptions} data={buyingLineChartValue} />
                     <Line options={buyingOrderLineChartOptions} data={buyingOrderAmountData} />
                 </Grid>
-                <Grid item sm={12} md={6}>
+                <Grid item sm={12} md={6} display={isClickOnSellingOrder ? "flex" : "none"}>
                     <Line options={sellingOrderLineChartOptions} data={sellingLineChartValue} />
                     <Line options={sellingOrderLineChartOptions} data={sellingOrderAmountData} />
                 </Grid>

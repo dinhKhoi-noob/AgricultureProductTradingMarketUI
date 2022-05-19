@@ -6,7 +6,7 @@ import { LayoutContext } from "./LayoutContext";
 import { TransactionType } from "./RequestContext";
 
 export type orderStatus = "notbegin" | "process" | "done";
-
+export type RatingType = "product" | "service";
 interface OrderStatusConverted {
     convertedStatus: string;
     isDone: boolean;
@@ -67,6 +67,22 @@ export interface OrderAssignmentValueInitializer {
     deliveringAssignment: ParticularAssignmentValueInitializer;
 }
 
+export interface RatingValueInitializer {
+    id: string;
+    rateBy: string;
+    ratePoint: number;
+    requestId: string;
+    comment: string;
+    type: RatingType;
+}
+
+export interface RatingInputValue {
+    requestId: string;
+    comment: string;
+    ratePoint: number;
+    type: RatingType;
+}
+
 interface OrderContextDefault {
     orderList: OrderValueInitializer[];
     buyingOrders: OrderValueInitializer[];
@@ -83,6 +99,8 @@ interface OrderContextDefault {
     currentOrder: OrderValueInitializer | undefined;
     currentSubOrders: OrderValueInitializer[];
     currentOrderConfirmationValue: OrderConfirmationValue;
+    inputRatingList: RatingInputValue[];
+    ratingList: RatingValueInitializer[];
     loadAllOrders: (uid?: string, loadingHistory?: boolean, type?: TransactionType) => void;
     loadOrderStatistic: (
         uid: string | undefined,
@@ -108,6 +126,9 @@ interface OrderContextDefault {
     changeOrderStatus: (status: string, uid: string) => void;
     changeCurrentOrderConfirmationValue: (value: OrderConfirmationValue) => void;
     checkStep: (currentStep: string, checkingStep: string) => boolean;
+    setRatingList: (ratingList: RatingInputValue[]) => void;
+    postRating: (uid: string, type: string) => void;
+    loadRatingList: (id: string, type: string) => void;
 }
 
 interface OrderContextProps {
@@ -134,6 +155,8 @@ const orderContextDefaultValue: OrderContextDefault = {
         isRoot: false,
         type: "buying",
     },
+    inputRatingList: [],
+    ratingList: [],
     loadAllOrders: () => null,
     loadOrderStatistic: () => null,
     loadComparingOrderStatistic: () => null,
@@ -145,6 +168,9 @@ const orderContextDefaultValue: OrderContextDefault = {
     changeOrderStatus: () => null,
     changeCurrentOrderConfirmationValue: () => null,
     checkStep: () => false,
+    setRatingList: () => null,
+    postRating: () => null,
+    loadRatingList: () => null,
 };
 
 export const OrderContext = createContext<OrderContextDefault>(orderContextDefaultValue);
@@ -217,6 +243,8 @@ const OrderContextProvider = ({ children }: OrderContextProps) => {
             isRoot: false,
             type: "buying",
         },
+        inputRatingList: [],
+        ratingList: [],
     };
     const { changeSnackbarValues } = useContext(LayoutContext);
     const [orderReducerState, dispatch] = useReducer(orderReducer, orderReducerStateInitial);
@@ -236,6 +264,8 @@ const OrderContextProvider = ({ children }: OrderContextProps) => {
         orderDetails,
         currentSubOrders,
         currentOrderConfirmationValue,
+        inputRatingList,
+        ratingList,
     } = orderReducerState;
 
     const convertOrderStatus = (status: string): OrderStatusConverted => {
@@ -668,11 +698,11 @@ const OrderContextProvider = ({ children }: OrderContextProps) => {
                 uid,
             });
             isRoot ? loadSpecificRootOrder(type, id) : loadOrderDetails(id);
-            changeSnackbarValues({
-                content: "Thay đổi trạng thái đơn hàng thành công",
-                isToggle: true,
-                type: "success",
-            });
+            // changeSnackbarValues({
+            //     content: "Thay đổi trạng thái đơn hàng thành công",
+            //     isToggle: true,
+            //     type: "success",
+            // });
         } catch (error) {
             handleError(error);
         }
@@ -850,6 +880,73 @@ const OrderContextProvider = ({ children }: OrderContextProps) => {
         }
     };
 
+    const setRatingList = (ratingList: RatingInputValue[]) => {
+        dispatch({ type: "setRatingList", payload: ratingList });
+    };
+
+    const loadRatingList = async (id: string, type: string) => {
+        try {
+            const ratingList = await axios.get(`${host}/api/rating/${id}/${type}`);
+            const data = ratingList.data.result;
+            if (data) {
+                const mappedRatingList: RatingValueInitializer[] = data.map((rating: any) => {
+                    const { id, rate_by, rating_point, subrequest_id, comment, rate_for } = rating;
+                    const ratingValue: RatingValueInitializer = {
+                        id,
+                        rateBy: rate_by,
+                        ratePoint: rating_point,
+                        requestId: subrequest_id,
+                        comment: comment === null || comment === "null" ? undefined : comment,
+                        type: rate_for ? "product" : "service",
+                    };
+                    return ratingValue;
+                });
+                dispatch({ type: "loadRatingList", payload: mappedRatingList });
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                dispatch({ type: "loadRatingList", payload: [] });
+                return;
+            }
+            handleError(error);
+        }
+    };
+
+    const postRating = async (uid: string, type: string) => {
+        const serviceRating = inputRatingList.filter(rating => rating.type === "service")[0];
+        const productRating = inputRatingList.filter(rating => rating.type === "product");
+        console.log(inputRatingList);
+        if (serviceRating && productRating.length > 0) {
+            try {
+                console.log(`${host}/api/rating`, {
+                    productRatingList: productRating,
+                    serviceRating,
+                    uid,
+                    type,
+                });
+                await axios.post(`${host}/api/rating`, {
+                    productRatingList: productRating,
+                    serviceRating,
+                    uid,
+                    type,
+                });
+                changeSnackbarValues({
+                    type: "success",
+                    isToggle: true,
+                    content: "Đã xác nhận và đánh giá thành công !",
+                });
+            } catch (error) {
+                handleError(error);
+            }
+            return;
+        }
+        changeSnackbarValues({
+            type: "error",
+            isToggle: true,
+            content: "Vui lòng nhập đầy đủ thông tin cần thiết !",
+        });
+    };
+
     const orderContextValue: OrderContextDefault = {
         orderList,
         buyingOrders,
@@ -866,6 +963,8 @@ const OrderContextProvider = ({ children }: OrderContextProps) => {
         currentOrder,
         currentSubOrders,
         currentOrderConfirmationValue,
+        inputRatingList,
+        ratingList,
         loadOrderStatistic,
         loadComparingOrderStatistic,
         convertOrderStatus,
@@ -877,6 +976,9 @@ const OrderContextProvider = ({ children }: OrderContextProps) => {
         changeOrderStatus,
         changeCurrentOrderConfirmationValue,
         checkStep,
+        setRatingList,
+        postRating,
+        loadRatingList,
     };
 
     return <OrderContext.Provider value={orderContextValue}>{children}</OrderContext.Provider>;

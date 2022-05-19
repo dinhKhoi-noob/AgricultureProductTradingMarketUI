@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { RequestContext, SubrequestResponseValueInitializer } from "../../src/context/RequestContext";
 import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import { compareAsc, formatDistanceToNow } from "date-fns";
@@ -7,12 +7,30 @@ import { Box, Button, Chip, Typography } from "@mui/material";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/router";
 import { AuthContext } from "../../src/context/AuthContext";
+import { DialAction } from "../../src/context/LayoutContext";
+import { FiClock } from "react-icons/fi";
+import { BsPatchCheck } from "react-icons/bs";
+import { MdOutlineCancel } from "react-icons/md";
+import SpeedDialNavigator from "../../src/components/layouts/navigation_bar/SpeedDialNavigator";
+import NumberFormat from "react-number-format";
 
 const BuyingSubRequest = () => {
     const { userInfo, getUserInformation } = useContext(AuthContext);
     const { subrequests, getAllRequestImage, getAllSubrequest } = useContext(RequestContext);
     const cookie = new Cookies();
     const router = useRouter();
+    const unconfirmedComponentRef = useRef<HTMLInputElement | null>(null);
+    const confirmedComponentRef = useRef<HTMLInputElement | null>(null);
+    const datedComponentRef = useRef<HTMLInputElement | null>(null);
+    const actions: DialAction[] = [
+        {
+            icon: <FiClock />,
+            title: "Đang chờ phê duyệt",
+            ref: unconfirmedComponentRef,
+        },
+        { icon: <BsPatchCheck />, title: "Đã được phê duyệt", ref: confirmedComponentRef },
+        { icon: <MdOutlineCancel />, title: "Đã quá thời hạn phê duyệt, đã huỷ", ref: datedComponentRef },
+    ];
     const [mappedDataUnconfirmedRequests, setMappedDataUnconfirmedRequests] = useState<any[]>([]);
     const [mappedDataConfirmedRequests, setMappedDataConfirmedRequests] = useState<any[]>([]);
     const [mappedDataDatedRequests, setMappedDataDatedRequests] = useState<any[]>([]);
@@ -113,8 +131,20 @@ const BuyingSubRequest = () => {
     const requestDataGridColumn: GridColDef[] = [
         { field: "id", headerName: "id", width: 100 },
         { field: "specificProductName", headerName: "Tên nông sản", width: 150 },
-        { field: "price", headerName: "Giá", width: 100 },
-        { field: "quantity", headerName: "Số lượng", width: 100 },
+        {
+            field: "price",
+            headerName: "Giá",
+            width: 100,
+            renderCell: params => (
+                <NumberFormat value={params.value} displayType="text" thousandSeparator={true} suffix="VND" />
+            ),
+        },
+        {
+            field: "quantity",
+            headerName: "Số lượng",
+            width: 100,
+            renderCell: params => <NumberFormat value={params.value} displayType="text" thousandSeparator={true} />,
+        },
         { field: "createdDate", headerName: "Ngày tạo", width: 200 },
         { field: "expiredDate", headerName: "Ngày giao hàng", width: 200 },
         { field: "status", headerName: "Trạng thái", width: 180, renderCell: params => params.value },
@@ -134,6 +164,7 @@ const BuyingSubRequest = () => {
 
     return (
         <>
+            <Box ref={unconfirmedComponentRef} />
             <Typography className="text-camel" textAlign="center" variant="h3" margin={8}>
                 Yêu cầu mua của bạn tới người dùng khác
             </Typography>
@@ -169,6 +200,7 @@ const BuyingSubRequest = () => {
                     rowsPerPageOptions={[5, 10, 20]}
                 />
             </Box>
+            <Box ref={confirmedComponentRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đã được phê duyệt
             </Typography>
@@ -201,6 +233,7 @@ const BuyingSubRequest = () => {
                     rowsPerPageOptions={[5, 10, 20]}
                 />
             </Box>
+            <Box ref={datedComponentRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đã quá thời gian phê duyệt
             </Typography>
@@ -233,6 +266,7 @@ const BuyingSubRequest = () => {
                     rowsPerPageOptions={[5, 10, 20]}
                 />
             </Box>
+            <SpeedDialNavigator actions={actions} />
         </>
     );
 };

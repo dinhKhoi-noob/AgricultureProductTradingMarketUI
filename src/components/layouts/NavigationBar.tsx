@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import NavigationSubItemContainer from "./navigation_bar/NavigationSubItemContainer";
 import NavigationItem from "./navigation_bar/NavigationItem";
 import { LayoutContext } from "../../context/LayoutContext";
-import { AiOutlineHome, AiOutlineLineChart } from "react-icons/ai";
+import { AiOutlineHome } from "react-icons/ai";
 import { BsArrowLeftCircleFill } from "react-icons/bs";
 import { FiPieChart } from "react-icons/fi";
 import { CgUserList } from "react-icons/cg";
@@ -65,9 +65,9 @@ const NavigationBar: React.FC = () => {
                         parentTitle="Tài khoản"
                         subItems={[
                             { icon: ImUserTie, title: "Người quản lý", url: "manager" },
-                            { icon: SiCodechef, title: "Nhà tiêu thụ", url: "consumer" },
-                            { icon: SiCodechef, title: "Nông dân", url: "farmer" },
-                            { icon: SiCodechef, title: "Nhân viên thu mua", url: "packing_employee" },
+                            { icon: SiCodechef, title: "Nhân viên giao hàng", url: "shipper" },
+                            { icon: SiCodechef, title: "Nhân viên đóng gói", url: "packing_employee" },
+                            { icon: SiCodechef, title: "Khách hàng", url: "customer" },
                         ]}
                         url="employees"
                     />
@@ -105,12 +105,6 @@ const NavigationBar: React.FC = () => {
                     ]}
                     url="authentication"
                 />
-                <div className="navbar-item m-tb-1rem">
-                    <div>
-                        <AiOutlineLineChart className="navbar-item-icon"></AiOutlineLineChart>
-                        <div className="navbar-item-title">Charts</div>
-                    </div>
-                </div>
             </div>
         </>
     );

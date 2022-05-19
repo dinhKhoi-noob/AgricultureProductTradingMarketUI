@@ -127,7 +127,7 @@ const Register = () => {
                         <FormLabel htmlFor="register-username" children={<Typography>Tên tài khoản</Typography>} />
                         <TextField
                             id="register-username"
-                            helperText="Tên người dùng phải dài tối thiểu 1 ký tự và phải là duy nhất"
+                            helperText="Tên người dùng phải dài tối thiểu 8 ký tự và phải là duy nhất"
                             fullWidth
                             value={username}
                             error={warningStatus.username}

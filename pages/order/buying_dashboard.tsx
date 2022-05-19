@@ -1,11 +1,19 @@
 import { Box, Button, Chip, Typography } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../../src/context/AuthContext";
 import { OrderContext, OrderValueInitializer } from "../../src/context/OrderContext";
 import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
+import { DialAction } from "../../src/context/LayoutContext";
+import { GiFarmer } from "react-icons/gi";
+import { RiShipLine } from "react-icons/ri";
+import { VscPackage } from "react-icons/vsc";
+import { MdOutlineLocalShipping } from "react-icons/md";
+import { BsPatchCheck } from "react-icons/bs";
+import SpeedDialNavigator from "../../src/components/layouts/navigation_bar/SpeedDialNavigator";
+import NumberFormat from "react-number-format";
 
 const BuyingDashboard = () => {
     const cookie = new Cookies();
@@ -18,11 +26,26 @@ const BuyingDashboard = () => {
         packagingOrders,
         deliveringOrders,
         successOrders,
-        canceledOrders,
         loadAllOrders,
         storeOrders,
         convertOrderStatus,
     } = useContext(OrderContext);
+    const preparingStageRef = useRef<HTMLInputElement | null>(null);
+    const carryingStageRef = useRef<HTMLInputElement | null>(null);
+    const packingStageRef = useRef<HTMLInputElement | null>(null);
+    const deliveringStageRef = useRef<HTMLInputElement | null>(null);
+    const successStageRef = useRef<HTMLInputElement | null>(null);
+    const actions: DialAction[] = [
+        {
+            icon: <GiFarmer />,
+            title: "Đang chuẩn bị/chờ giao hàng",
+            ref: preparingStageRef,
+        },
+        { icon: <RiShipLine />, title: "Đang nhận hàng/chờ đóng gói", ref: carryingStageRef },
+        { icon: <VscPackage />, title: "Đang đóng gói/chờ giao hàng", ref: packingStageRef },
+        { icon: <MdOutlineLocalShipping />, title: "Đang giao hàng", ref: deliveringStageRef },
+        { icon: <BsPatchCheck />, title: "Đã giao hàng", ref: successStageRef },
+    ];
     const [uniqueRequestId, setUniqueRequestId] = useState<string[]>([]);
     const [sellingPreparingStageOrders, setSellingPreparingStageOrders] = useState<any[]>([]);
 
@@ -63,11 +86,11 @@ const BuyingDashboard = () => {
                     storeOrders("loadSuccessOrders", data);
                 }
                 break;
-            case "cancel":
-                if (!checkIsExistedData(canceledOrders, data)) {
-                    storeOrders("loadCanceledOrders", data);
-                }
-                break;
+            // case "cancel":
+            //     if (!checkIsExistedData(canceledOrders, data)) {
+            //         storeOrders("loadCanceledOrders", data);
+            //     }
+            //     break;
             default:
                 break;
         }
@@ -139,14 +162,14 @@ const BuyingDashboard = () => {
                     price,
                     quantity,
                     total: Math.round(price * quantity),
-                    requestUsername: requestUsername,
-                    subrequestUsername: subrequestUsername,
+                    requestUsername: transactionType === "selling" ? requestUsername : subrequestUsername,
+                    subrequestUsername: transactionType === "selling" ? subrequestUsername : requestUsername,
                     expiredDate:
-                        transactionType === "selling"
+                        transactionType === "buying"
                             ? format(new Date(dateCompletedOrder), "dd/MM/yyyy HH:mm:ss")
                             : format(new Date(expiredDate), "dd/MM/yyyy HH:mm:ss"),
                     dateCompletedOrder:
-                        transactionType === "selling"
+                        transactionType === "buying"
                             ? format(new Date(expiredDate), "dd/MM/yyyy HH:mm:ss")
                             : format(new Date(dateCompletedOrder), "dd/MM/yyyy HH:mm:ss"),
                     status: <Chip label={convertedStatus} color={isDone ? "success" : "warning"} />,
@@ -261,19 +284,58 @@ const BuyingDashboard = () => {
     const orderColumns: GridColDef[] = [
         { field: "id", headerName: "id", width: 100 },
         { field: "productName", headerName: "Tên nông sản", width: 150 },
-        { field: "price", headerName: "Giá", width: 100 },
-        { field: "quantity", headerName: "Số lượng", width: 100 },
-        { field: "total", headerName: "Tổng cộng", width: 100 },
+        {
+            field: "price",
+            headerName: "Giá",
+            width: 100,
+            renderCell: params => {
+                return (
+                    <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
+                        <NumberFormat value={params.value} displayType="text" thousandSeparator={true} suffix="VND" />
+                    </Box>
+                );
+            },
+        },
+        {
+            field: "quantity",
+            headerName: "Số lượng",
+            width: 100,
+            renderCell: params => {
+                return (
+                    <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
+                        <NumberFormat value={params.value} displayType="text" thousandSeparator={true} />
+                    </Box>
+                );
+            },
+        },
+        {
+            field: "total",
+            headerName: "Tổng cộng",
+            width: 150,
+            renderCell: params => {
+                return (
+                    <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
+                        <NumberFormat value={params.value} displayType="text" thousandSeparator={true} suffix="VND" />
+                    </Box>
+                );
+            },
+        },
         { field: "requestUsername", headerName: "Nhận hàng từ", width: 200 },
         { field: "subrequestUsername", headerName: "Giao hàng đến", width: 200 },
         { field: "expiredDate", headerName: "Ngày nhận hàng", width: 200 },
         { field: "dateCompletedOrder", headerName: "Ngày giao hàng", width: 200 },
-        { field: "status", headerName: "Trạng thái", width: 200, renderCell: params => params.value },
-        { field: "transactionType", headerName: "Loại giao dịch", width: 150 },
+        {
+            field: "status",
+            headerName: "Trạng thái",
+            width: 200,
+            valueFormatter: ({ value }) => value,
+            renderCell: params => params.value,
+        },
         {
             field: "view",
             headerName: "",
             width: 150,
+            valueFormatter: ({ value }) => value,
             renderCell: () => {
                 return (
                     <Button variant="contained" color="info">
@@ -286,6 +348,7 @@ const BuyingDashboard = () => {
 
     return (
         <Box>
+            <Box ref={preparingStageRef} />
             <Typography variant="h4" textAlign="center" margin={4}>
                 Đơn hàng mua vào
             </Typography>
@@ -319,6 +382,7 @@ const BuyingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={carryingStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang nhận hàng / chờ đóng gói
             </Typography>
@@ -349,6 +413,7 @@ const BuyingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={packingStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang đóng gói / chờ giao hàng
             </Typography>
@@ -379,6 +444,7 @@ const BuyingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={deliveringStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đang giao hàng
             </Typography>
@@ -409,6 +475,7 @@ const BuyingDashboard = () => {
                     pagination
                 />
             </Box>
+            <Box ref={successStageRef} />
             <Typography className="text-camel" variant="h5" margin={5} mb={0}>
                 Đã giao hàng
             </Typography>
@@ -439,36 +506,7 @@ const BuyingDashboard = () => {
                     pagination
                 />
             </Box>
-            <Typography className="text-camel" variant="h5" margin={5} mb={0}>
-                Đã huỷ
-            </Typography>
-            <Box p={4}>
-                <DataGrid
-                    getRowId={row => row.id}
-                    rows={canceledOrders}
-                    columns={orderColumns}
-                    disableSelectionOnClick
-                    autoHeight
-                    onCellClick={row => {
-                        if (row.field === "view") {
-                            navigateToOrderDetailsPage(row.id.toString());
-                        }
-                    }}
-                    localeText={{
-                        toolbarDensity: "Size",
-                        toolbarDensityLabel: "Size",
-                        toolbarDensityCompact: "Small",
-                        toolbarDensityStandard: "Medium",
-                        toolbarDensityComfortable: "Large",
-                    }}
-                    components={{
-                        Toolbar: GridToolbar,
-                    }}
-                    pageSize={10}
-                    rowsPerPageOptions={[5, 10, 20]}
-                    pagination
-                />
-            </Box>
+            <SpeedDialNavigator actions={actions} />
         </Box>
     );
 };

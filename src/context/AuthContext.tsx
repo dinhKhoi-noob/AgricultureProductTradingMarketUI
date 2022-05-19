@@ -30,6 +30,19 @@ interface AuthContextProps {
     children: ReactNode;
 }
 
+export interface UserInformationValue {
+    id: string;
+    username: string;
+    avatar: string;
+    role: string;
+    address: string;
+    phone: string;
+    email: string;
+    loginMethod: string;
+    createdDate: Date;
+    isActive: boolean;
+}
+
 export interface UserInfomationInitializer {
     id: string;
     username: string;
@@ -75,6 +88,9 @@ interface AuthContextDefault {
     userRole: string;
     userInfo: UserInfomationInitializer;
     addressList: UserAddressValue[];
+    users: UserInformationValue[];
+    currentUserId: string;
+    isToggleOnCreateUserModal: boolean;
     changeWarningStatus: (type: WarningFieldName, value: boolean) => void;
     setCookie: () => void;
     checkCookie: () => boolean;
@@ -101,6 +117,11 @@ interface AuthContextDefault {
     fillUserInformationOnEditing: () => void;
     renderUserAddress: () => void;
     addNewAddress: (address: string, uid: string) => void;
+    loadUsers: (role: string) => void;
+    createUser: (user: RegisterUserType, role: string) => void;
+    changeUserActiveStatus: (status: boolean) => void;
+    changeCurrentUserId: (userId: string, role: string) => void;
+    changeIsToggleOnCreateUserModal: (status?: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextDefault>({
@@ -148,6 +169,9 @@ export const AuthContext = createContext<AuthContextDefault>({
         loginMethod: "",
     },
     addressList: [],
+    users: [],
+    currentUserId: "",
+    isToggleOnCreateUserModal: false,
     changeWarningStatus: () => null,
     setCookie: () => null,
     checkCookie: () => false,
@@ -168,6 +192,11 @@ export const AuthContext = createContext<AuthContextDefault>({
     fillUserInformationOnEditing: () => null,
     renderUserAddress: () => null,
     addNewAddress: () => null,
+    loadUsers: () => null,
+    createUser: () => null,
+    changeUserActiveStatus: () => null,
+    changeCurrentUserId: () => null,
+    changeIsToggleOnCreateUserModal: () => null,
 });
 
 const AuthContextProvider = ({ children }: AuthContextProps) => {
@@ -196,8 +225,11 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
             loginMethod: "",
         },
         addressList: [],
+        users: [],
     };
     const [loadSelector, setLoadSelector] = useState(false);
+    const [currentRole, setCurrentRole] = useState("1234567890");
+    const [isToggleOnCreateUserModal, setIsToggleOnCreateUserModal] = useState(false);
     const [cities, setCities] = useState([]);
     const [districtSelection, setDistrictSelection] = useState([]);
     const [wardSelection, setWardSelection] = useState([]);
@@ -218,12 +250,25 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         address: "",
         email: "",
     });
+    const [currentUserId, setCurrentUserId] = useState("");
 
     const { changeSnackbarValues, changeLoadingStatus } = useContext(LayoutContext);
     const [authState, dispatch] = useReducer(authReducer, authReducerStateDefault);
     const host = `http://localhost:4000`;
     const router = useRouter();
     const cookie = new Cookie();
+
+    const changeIsToggleOnCreateUserModal = (status?: boolean) => {
+        if (status !== undefined) {
+            setIsToggleOnCreateUserModal(status);
+        }
+        setIsToggleOnCreateUserModal(!isToggleOnCreateUserModal);
+    };
+
+    const changeCurrentUserId = (userId: string, role: string) => {
+        setCurrentUserId(userId);
+        setCurrentRole(role);
+    };
 
     const renderDistrictEditingSelector = () => {
         const addressSelectorCode = authState.userInfo.address.split("!^!")[1];
@@ -266,6 +311,22 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         }
     }, [wardSelection]);
 
+    const handleError = (error: any) => {
+        if (axios.isAxiosError(error)) {
+            changeSnackbarValues({
+                content: error.response?.data.message,
+                isToggle: true,
+                type: "error",
+            });
+            return;
+        }
+        changeSnackbarValues({
+            content: "Lỗi hệ thống",
+            isToggle: true,
+            type: "error",
+        });
+    };
+
     const checkCookie = () => {
         const uid = cookie.get("uid");
         if (uid) {
@@ -281,23 +342,6 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
             setCities(cities);
         } catch (error) {
             console.log(error);
-        }
-    };
-
-    const postBusinessProductType = async (interestList: InterestItemValueInitializer[], uid: string) => {
-        try {
-            const data = interestList.map((item: InterestItemValueInitializer) => {
-                return {
-                    productTypeId: item.id,
-                };
-            });
-            await axios.post(`${host}/api/business_product_type/${uid}`, { interestArray: data });
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                changeSnackbarValues({ content: error.response?.data.message, type: "error", isToggle: true });
-                return;
-            }
-            changeSnackbarValues({ content: "Lỗi hệ thống", type: "error", isToggle: true });
         }
     };
 
@@ -365,9 +409,6 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
                         path: "/",
                         expires: new Date(new Date().setDate(new Date().getDate() + 1)),
                     });
-                    if (type === "register" && interestList) {
-                        postBusinessProductType(interestList, id);
-                    }
                     socket.auth = { uid: id };
                     socket.connect();
                     storeUserLoginInformation();
@@ -474,7 +515,7 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
             const registerationData = registerationResponse.data;
             const token = registerationData.token;
             console.log(token);
-            setCookie(token, "register", interestList);
+            setCookie(token, "register");
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 changeSnackbarValues({ content: error.response?.data.message, type: "error", isToggle: true });
@@ -527,20 +568,6 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
                     }
                 }
             }
-            // if (isEditing && typeof window !== "undefined") {
-            //     const userValue = localStorage.getItem("user");
-            //     if (userValue) {
-            //         const userData = JSON.parse(userValue);
-            //         let temporaryUserData = userData;
-            //         temporaryUserData = { ...userData, address, phone };
-            //         if (filePath && filePath !== "") {
-            //             temporaryUserData = { ...userData, address, phone, avatar: filePath };
-            //         }
-            //         localStorage.setItem("user", JSON.stringify(temporaryUserData));
-            //         dispatch({ type: "info", payload: temporaryUserData });
-            //     }
-            //     return;
-            // }
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 changeSnackbarValues({ content: error.response?.data.message, type: "error", isToggle: true });
@@ -775,6 +802,87 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         }
     };
 
+    const loadUsers = async (role: string) => {
+        try {
+            const response = await axios.get(`${host}/api/user${role ? `?role=${role}` : ""}`);
+            const data = response.data.result;
+            console.log(data);
+            if (data) {
+                const mappedUserList: UserInformationValue[] = data.map((user: any) => {
+                    const {
+                        id,
+                        username,
+                        address,
+                        login_method,
+                        role_id,
+                        phone,
+                        email,
+                        avatar,
+                        is_active,
+                        created_date,
+                    } = user;
+                    const transitoryInformation: UserInformationValue = {
+                        address,
+                        id,
+                        username,
+                        avatar,
+                        createdDate: new Date(created_date),
+                        email,
+                        isActive: is_active === 0 ? true : false,
+                        loginMethod: login_method,
+                        phone,
+                        role: role_id,
+                    };
+                    return transitoryInformation;
+                });
+                dispatch({ type: "loadUsers", payload: mappedUserList });
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                dispatch({ type: "loadUsers", payload: [] });
+                return;
+            }
+            handleError(error);
+        }
+    };
+
+    const createUser = async (user: RegisterUserType, role: string) => {
+        try {
+            const { password, phone, email, username, address } = user;
+            await axios.post(`${host}/api/user/create`, {
+                username,
+                password,
+                address,
+                email,
+                phone,
+                role_id: role,
+            });
+            changeSnackbarValues({
+                type: "success",
+                isToggle: true,
+                content: "Tạo người dùng mới thành công !",
+            });
+            loadUsers(role);
+        } catch (error) {
+            handleError(error);
+        }
+    };
+
+    const changeUserActiveStatus = async (status: boolean) => {
+        try {
+            console.log(`${host}/api/user/status/${currentUserId}`);
+            await axios.patch(`${host}/api/user/status/${currentUserId}`, { status: status ? 0 : 1 });
+            changeSnackbarValues({
+                type: "success",
+                isToggle: true,
+                content: status ? "Tái kích hoạt người dùng thành công" : "Vô hiệu hoá dùng thành công !",
+            });
+            loadUsers(currentRole);
+        } catch (error) {
+            handleError(error);
+        }
+    };
+
     const authContextValue = {
         cities,
         districtSelection,
@@ -785,6 +893,9 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         userRole: authState.userRole,
         userInfo: authState.userInfo,
         addressList: authState.addressList,
+        users: authState.users,
+        currentUserId,
+        isToggleOnCreateUserModal,
         changeWarningStatus,
         dispatch,
         setCookie,
@@ -806,6 +917,11 @@ const AuthContextProvider = ({ children }: AuthContextProps) => {
         fillUserInformationOnEditing,
         renderUserAddress,
         addNewAddress,
+        loadUsers,
+        createUser,
+        changeUserActiveStatus,
+        changeCurrentUserId,
+        changeIsToggleOnCreateUserModal,
     };
     return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };

@@ -1,6 +1,6 @@
 import { Box, Chip, Typography } from "@mui/material";
 import { format } from "date-fns";
-import React from "react";
+import React, { useEffect } from "react";
 import NumberFormat from "react-number-format";
 import { OrderValueInitializer } from "../../context/OrderContext";
 import Progress from "../layouts/Progress";
@@ -10,6 +10,9 @@ interface OrderInformationProps {
 }
 
 const OrderInformation = ({ order }: OrderInformationProps) => {
+    useEffect(() => {
+        console.log(order);
+    }, [order]);
     const formatDateString = "dd/MM/yyyy HH:mm";
     const convertOrderStatus = (status: string) => {
         if (status === "ready") {
@@ -47,6 +50,7 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
             isDone: false,
         };
     };
+    const isSubOrder = order?.id.includes("-");
     return order ? (
         <Box p={6} pb={0} pt={0}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mb={2}>
@@ -97,7 +101,7 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
             </Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mb={2}>
                 <Typography fontWeight="bold">
-                    Ngày nhận hàng({order.transactionType === "buying" ? "Sau:" : "Trước"}):
+                    Ngày nhận hàng({order.transactionType === "buying" ? "Sau" : "Trước"}):
                 </Typography>
                 <Typography>{format(new Date(order.dateCompletedOrder), formatDateString)}</Typography>
             </Box>
@@ -118,7 +122,11 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mb={2}>
                 <Typography fontWeight="bold">Nhận hàng từ:</Typography>
                 <Typography>
-                    {order.transactionType === "buying" ? order.subrequestUsername : order.requestUsername}
+                    {isSubOrder
+                        ? order.requestUsername
+                        : order.transactionType === "selling"
+                        ? order.requestUsername
+                        : order.subrequestUsername}
                 </Typography>
             </Box>
             <Box mt={2} mb={2}>
@@ -130,6 +138,8 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
                                 <Typography>{address}</Typography>
                             </li>
                         ))
+                    ) : isSubOrder ? (
+                        <Typography>{order.requestAddress}</Typography>
                     ) : (
                         <Typography>{order.subrequestAddress}</Typography>
                     )
@@ -139,6 +149,8 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
                             <Typography>{address}</Typography>
                         </li>
                     ))
+                ) : isSubOrder ? (
+                    <Typography>{order.requestAddress}</Typography>
                 ) : (
                     <Typography>{order.requestAddress}</Typography>
                 )}
@@ -146,7 +158,11 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mb={2}>
                 <Typography fontWeight="bold">Giao hàng đến:</Typography>
                 <Typography>
-                    {order.transactionType === "buying" ? order.requestUsername : order.subrequestUsername}
+                    {isSubOrder
+                        ? order.subrequestUsername
+                        : order.transactionType === "selling"
+                        ? order.subrequestUsername
+                        : order.requestUsername}
                 </Typography>
             </Box>
             <Box mt={2} mb={2}>
@@ -158,6 +174,8 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
                                 <Typography>{address}</Typography>
                             </li>
                         ))
+                    ) : isSubOrder ? (
+                        <Typography>{order.subrequestAddress}</Typography>
                     ) : (
                         <Typography>{order.requestAddress}</Typography>
                     )
@@ -167,6 +185,8 @@ const OrderInformation = ({ order }: OrderInformationProps) => {
                             <Typography>{address}</Typography>
                         </li>
                     ))
+                ) : isSubOrder ? (
+                    <Typography>{order.subrequestAddress}</Typography>
                 ) : (
                     <Typography>{order.subrequestAddress}</Typography>
                 )}

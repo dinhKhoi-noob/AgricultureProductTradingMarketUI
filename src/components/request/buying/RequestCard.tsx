@@ -7,7 +7,6 @@ import {
     CardContent,
     CardHeader,
     Collapse,
-    Grid,
     IconButton,
     IconButtonProps,
     LinearProgress,
@@ -254,29 +253,47 @@ const RequestCard = (props: RequestCardProps) => {
                 </CardActions>
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>
+                        <Typography>Đã yêu cầu thành công:</Typography>
+                    </CardContent>
+                    <CardContent>
                         {user.length > 0 ? (
                             user.map((user: SucceedTradingUserProps, index) => {
                                 const splittedSelledUsername = user.username.split("");
                                 return (
-                                    <Grid container key={index}>
-                                        <Grid item>
-                                            {user.avatar === "" || user.avatar === "'avatar'" || !user.avatar ? (
-                                                <Avatar sx={{ bgcolor: blue[500] }}>
-                                                    {splittedSelledUsername[splittedSelledUsername.length - 1]}
-                                                </Avatar>
-                                            ) : (
-                                                <Avatar src={user.avatar} />
-                                            )}
-                                        </Grid>
-                                        <Grid item>{user.username}</Grid>
-                                        <Grid item>
-                                            Số lượng: &nbsp;<Typography>{user.quantity}</Typography>
-                                        </Grid>
-                                    </Grid>
+                                    <Box key={index}>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                                            <Box display="flex" alignItems="center">
+                                                <Box>
+                                                    {user.avatar === "" ||
+                                                    user.avatar === "'avatar'" ||
+                                                    !user.avatar ? (
+                                                        <Avatar sx={{ bgcolor: blue[500] }}>
+                                                            {splittedSelledUsername[splittedSelledUsername.length - 1]}
+                                                        </Avatar>
+                                                    ) : (
+                                                        <Avatar src={user.avatar} />
+                                                    )}
+                                                </Box>
+                                                &nbsp;
+                                                <Typography>{user.username}</Typography>
+                                            </Box>
+                                            <Box display="flex">
+                                                <Typography>Số lượng: </Typography>&nbsp;
+                                                <Typography>
+                                                    <NumberFormat
+                                                        displayType="text"
+                                                        value={user.quantity}
+                                                        thousandSeparator={true}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        <hr />
+                                    </Box>
                                 );
                             })
                         ) : (
-                            <Typography>Chưa có giao dịch được thực hiện</Typography>
+                            <Typography>Chưa có yêu cầu thành công</Typography>
                         )}
                     </CardContent>
                 </Collapse>

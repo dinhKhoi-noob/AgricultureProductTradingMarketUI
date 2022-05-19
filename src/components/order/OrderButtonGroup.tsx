@@ -1,8 +1,9 @@
-import { Box, Button } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import React, { useContext } from "react";
 import { LayoutContext, OrderConfirmationType } from "../../context/LayoutContext";
-import { OrderContext } from "../../context/OrderContext";
+import { OrderContext, OrderValueInitializer } from "../../context/OrderContext";
 import { TransactionType } from "../../context/RequestContext";
+import RatingBoard from "./RatingBoard";
 
 interface OrderButtonGroupProps {
     id: string | undefined;
@@ -13,10 +14,11 @@ interface OrderButtonGroupProps {
     userId: string | undefined;
     requestUserId: string | undefined;
     subrequestUserId: string | undefined;
+    subOrders: OrderValueInitializer[];
 }
 
 const OrderButtonGroup = (props: OrderButtonGroupProps) => {
-    const { id, role, status, type, isRoot, userId, requestUserId, subrequestUserId } = props;
+    const { id, role, status, type, isRoot, userId, requestUserId, subrequestUserId, subOrders } = props;
     const { changeConfirmationModalValues } = useContext(LayoutContext);
     const { changeCurrentOrderConfirmationValue } = useContext(OrderContext);
 
@@ -206,30 +208,28 @@ const OrderButtonGroup = (props: OrderButtonGroupProps) => {
                     );
                 }
                 break;
-            case "success":
-                if (
-                    (role === "consummer" && type === "buying" && isRoot && userId === requestUserId) ||
-                    (role === "consummer" && type === "selling" && !isRoot && userId === subrequestUserId)
-                ) {
-                    return (
-                        <Button
-                            variant="contained"
-                            color="info"
-                            onClick={() => {
-                                handleOnClickOrderButton(id, "xác nhận đơn hàng", "changeToConfirmed", isRoot, type);
-                            }}
-                        >
-                            Xác nhận đơn hàng
-                        </Button>
-                    );
-                }
-                break;
         }
     };
     return id && role && status && type && userId && requestUserId && subrequestUserId ? (
-        <Box p={6} justifyContent="flex-end" display="flex">
-            {renderButtonGroups(id, role, status, type, isRoot, userId, requestUserId, subrequestUserId)}
-        </Box>
+        (role === "consummer" && type === "buying" && isRoot && userId === requestUserId && status === "success") ||
+        (role === "consummer" &&
+            type === "selling" &&
+            !isRoot &&
+            userId === subrequestUserId &&
+            status === "success") ? (
+            <Grid container>
+                <Grid item md={12}>
+                    <RatingBoard id={id} isRoot={isRoot} transactionType={type} subOrders={subOrders} />
+                </Grid>
+            </Grid>
+        ) : (
+            <Grid container>
+                <Grid md={6} sm={12} item justifyContent="flex-end" display="flex">
+                    {renderButtonGroups(id, role, status, type, isRoot, userId, requestUserId, subrequestUserId)}
+                </Grid>
+                <Grid item md={6} sm={12}></Grid>
+            </Grid>
+        )
     ) : (
         <></>
     );

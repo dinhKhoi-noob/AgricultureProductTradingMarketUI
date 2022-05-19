@@ -19,13 +19,14 @@ import ConfirmationModal from "../../src/components/layouts/ConfirmationModal";
 import Progress from "../../src/components/layouts/Progress";
 import OrderButtonGroup from "../../src/components/order/OrderButtonGroup";
 import OrderInformation from "../../src/components/order/OrderInformation";
+import RatingList from "../../src/components/order/RatingList";
 import { AuthContext } from "../../src/context/AuthContext";
 import { OrderContext, OrderValueInitializer, StepValueInitializer } from "../../src/context/OrderContext";
 
 const OrderDetails = () => {
     const router = useRouter();
     const cookie = new Cookies();
-    const { orderDetails, currentOrder, loadOrderDetails, changeCurrentOrderInformation, checkStep } =
+    const { orderDetails, currentOrder, loadOrderDetails, changeCurrentOrderInformation, checkStep, loadRatingList } =
         useContext(OrderContext);
     const [steps, setSteps] = useState<any[]>([]);
     const { userInfo, getUserInformation } = useContext(AuthContext);
@@ -63,6 +64,9 @@ const OrderDetails = () => {
                 subrequestId,
                 subrequestUserId,
             } = order;
+            if (status === "confirmed") {
+                loadRatingList(subrequestId, "subrequest");
+            }
             const formatDateString = "dd/MM/yyyy HH:mm:ss";
             const stepsValue: StepValueInitializer[] = [
                 {
@@ -76,7 +80,7 @@ const OrderDetails = () => {
                 },
                 {
                     name: "Chuẩn bị hàng",
-                    by: transactionType === "buying" ? requestUsername : subrequestUsername,
+                    by: requestUsername,
                     dateCreated: format(new Date(orderCreatedDate), formatDateString),
                     dateCompleted: format(
                         new Date(transactionType === "selling" ? expiredDate : dateCompletedOrder),
@@ -123,7 +127,7 @@ const OrderDetails = () => {
                 },
                 {
                     name: "Xác nhận đơn hàng",
-                    by: transactionType !== "selling" ? requestUsername : subrequestUsername,
+                    by: transactionType !== "buying" ? requestUsername : subrequestUsername,
                     dateCreated: format(new Date(deliveringAssignment.dateCompleted), formatDateString),
                     dateCompleted: format(new Date(orderConfirmedDate), formatDateString),
                     color: checkStep("success", status) ? "#00c853" : status === "success" ? "#f57f17" : "#263238",
@@ -229,21 +233,23 @@ const OrderDetails = () => {
             <Grid container justifyContent="center">
                 <Grid item md={6} sm={12}>
                     <OrderInformation order={currentOrder} />
-                    <OrderButtonGroup
-                        id={currentOrder?.id}
-                        status={currentOrder?.status}
-                        role={userInfo?.role}
-                        isRoot={false}
-                        type={currentOrder?.transactionType === "selling" ? "selling" : "buying"}
-                        requestUserId={currentOrder?.requestUserId}
-                        subrequestUserId={currentOrder?.subrequestUserId}
-                        userId={userInfo?.id}
-                    />
                 </Grid>
                 <Grid item md={6} sm={12}>
                     <Timeline position="alternate">{renderTimeline()}</Timeline>
                 </Grid>
             </Grid>
+            <OrderButtonGroup
+                id={currentOrder?.id}
+                status={currentOrder?.status}
+                role={userInfo?.role}
+                isRoot={false}
+                type={currentOrder?.transactionType === "selling" ? "selling" : "buying"}
+                requestUserId={currentOrder?.requestUserId}
+                subrequestUserId={currentOrder?.subrequestUserId}
+                userId={userInfo?.id}
+                subOrders={currentOrder ? [currentOrder] : []}
+            />
+            {currentOrder?.status === "confirmed" ? <RatingList /> : <></>}
         </>
     );
 };

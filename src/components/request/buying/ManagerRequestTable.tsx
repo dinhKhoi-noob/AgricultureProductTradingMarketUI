@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, Chip, Grid, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import {
     RequestContext,
@@ -16,6 +16,7 @@ import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import NumberFormat from "react-number-format";
 
 interface ManagerBuyingRequestTableProps {
     type: TransactionType;
@@ -60,11 +61,17 @@ const ManagerBuyingRequestTable = ({ type }: ManagerBuyingRequestTableProps) => 
         },
         { field: "specificProductName", headerName: "Tên nông sản", width: 150 },
         { field: "username", headerName: "Tạo bởi", width: 150 },
-        { field: "price", headerName: "Giá", width: 100 },
+        { field: "price", headerName: "Giá", width: 100, renderCell: params => params.value },
         { field: "quantity", headerName: "Số lượng", width: 100 },
         { field: "createdDate", headerName: "Ngày tạo", width: 200 },
         { field: "expiredDate", headerName: "Ngày giao hàng", width: 200 },
-        { field: "status", headerName: "Trạng thái", width: 100, cellClassName: "status-color" },
+        {
+            field: "status",
+            headerName: "Trạng thái",
+            width: 150,
+            cellClassName: "status-color",
+            renderCell: params => params.value,
+        },
         {
             field: "view",
             headerName: "",
@@ -98,7 +105,18 @@ const ManagerBuyingRequestTable = ({ type }: ManagerBuyingRequestTableProps) => 
 
         const mappingList = isRenderingConfirmedRequest ? confirmedRequests : isDated ? isDatedRequest : waitingRequest;
         const mappedList = mappingList.map((item: RequestValueResponseInitializer, index) => {
-            const { id, specificProductName, quantity, expiredDate, price, status, createdDate, owner, measure } = item;
+            const {
+                id,
+                specificProductName,
+                quantity,
+                expiredDate,
+                price,
+                status,
+                createdDate,
+                owner,
+                measure,
+                process,
+            } = item;
             const images = requestImages
                 .filter((image: RequestImage) => {
                     return image.requestId === id;
@@ -110,11 +128,18 @@ const ManagerBuyingRequestTable = ({ type }: ManagerBuyingRequestTableProps) => 
                 id,
                 thumbnail: images.length > 0 ? images[0] : "none",
                 specificProductName,
-                price,
-                quantity: quantity.toString() + " " + measure,
+                price: <NumberFormat value={price} thousandSeparator={true} displayType="text" suffix="VND" />,
+                quantity: (quantity + process).toString() + " " + measure,
                 createdDate: formatDistanceToNow(new Date(createdDate), { addSuffix: true, locale: vi }),
                 expiredDate: formatDistanceToNow(new Date(expiredDate), { addSuffix: true, locale: vi }),
-                status,
+                status: (
+                    <Chip
+                        label={
+                            status === "success" ? "Đã hoàn thành" : status === "process" ? "Đang thực hiện" : "Đã huỷ"
+                        }
+                        color={status === "success" ? "success" : status === "process" ? "warning" : "error"}
+                    />
+                ),
                 username: owner.username,
             };
         });

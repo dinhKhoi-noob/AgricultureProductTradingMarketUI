@@ -107,9 +107,12 @@ const Authorization = () => {
             }
         }
     };
-    for (let i = 0; i <= 2; i++) {
+    useEffect(() => {
         validation();
-    }
+    });
+    // for (let i = 0; i <= 2; i++) {
+    //     validation();
+    // }
     useEffect(() => {
         if (response) {
             handleCookie();

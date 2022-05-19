@@ -34,10 +34,12 @@ const BuyingRequestTable = ({ transactionType }: BuyingRequestTableProps) => {
         const mappingRequest =
             type === "owner"
                 ? confirmedRequests.filter(
-                      (request: RequestValueResponseInitializer) => request && request.owner.id === userInfo.id
+                      (request: RequestValueResponseInitializer) =>
+                          request && request.owner.id === userInfo.id && request.quantity !== 0
                   )
                 : confirmedRequests.filter(
-                      (request: RequestValueResponseInitializer) => request && request.owner.id !== userInfo.id
+                      (request: RequestValueResponseInitializer) =>
+                          request && request.owner.id !== userInfo.id && request.quantity !== 0
                   );
         return mappingRequest.map((item: RequestValueResponseInitializer, index) => {
             const {

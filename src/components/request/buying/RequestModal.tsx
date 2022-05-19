@@ -90,8 +90,10 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
     }, [currentTargetRequest]);
 
     const submitRegisterSellingRequest = (type: TransactionType) => {
-        const maxPrice = Math.round((priceIncludeFee * 110) / 100);
-        const minPrice = Math.round((priceIncludeFee * 90) / 100);
+        const maxPrice =
+            type === "buying" ? Math.round((priceIncludeFee * 110) / 100) : Math.round((priceIncludeFee * 103) / 100);
+        const minPrice =
+            type === "buying" ? Math.round((priceIncludeFee * 97) / 100) : Math.round((priceIncludeFee * 90) / 100);
         if (
             currentSellingRequest.price < minPrice ||
             currentSellingRequest.price < 0 ||
@@ -101,6 +103,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
             currentSellingRequest.address === "default" ||
             (type === "selling" && currentSellingRequest.description === "")
         ) {
+            console.log(minPrice, maxPrice);
             changeSnackbarValues({
                 content: "Thông tin không hợp lệ, vui lòng thử lại !",
                 isToggle: true,
@@ -120,8 +123,10 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
     const updateSubrequestInformation = (event: SyntheticEvent) => {
         event.preventDefault();
         console.log(type);
-        const maxPrice = Math.round((priceIncludeFee * 110) / 100);
-        const minPrice = Math.round((priceIncludeFee * 90) / 100);
+        const maxPrice =
+            type === "selling" ? Math.round((priceIncludeFee * 110) / 100) : Math.round((priceIncludeFee * 103) / 100);
+        const minPrice =
+            type === "buying" ? Math.round((priceIncludeFee * 90) / 100) : Math.round((priceIncludeFee * 97) / 100);
         if (
             currentSellingRequest.price < minPrice ||
             currentSellingRequest.price < 0 ||
@@ -280,7 +285,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                         </Typography>
                     </Box>
                     <Box mt={1.5}>
-                        <Tooltip title="Giá đề nghị + 10%">
+                        <Tooltip title={type === "selling" ? "Giá đề nghị + 10%" : "Giá đề nghị + 3%"}>
                             <Box display="flex" justifyContent="space-between">
                                 <Typography fontWeight="bold" fontSize={14} mr={1}>
                                     Giá tối đa có thể đề nghị:
@@ -288,7 +293,11 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                                 <Typography fontSize={14}>
                                     <NumberFormat
                                         displayType="text"
-                                        value={Math.round((priceIncludeFee * 110) / 100)}
+                                        value={
+                                            type === "selling"
+                                                ? Math.round((priceIncludeFee * 110) / 100)
+                                                : Math.round((priceIncludeFee * 103) / 100)
+                                        }
                                         suffix="VND"
                                         thousandSeparator={true}
                                     />
@@ -297,7 +306,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                         </Tooltip>
                     </Box>
                     <Box mt={1.5}>
-                        <Tooltip title="Giá đề nghị - 10%">
+                        <Tooltip title={type === "buying" ? "Giá đề nghị - 10%" : "Giá đề nghị - 3%"}>
                             <Box display="flex" justifyContent="space-between">
                                 <Typography fontWeight="bold" fontSize={14} mr={1}>
                                     Giá tối thiểu có thể đề nghị:
@@ -305,7 +314,11 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                                 <Typography fontSize={14}>
                                     <NumberFormat
                                         displayType="text"
-                                        value={Math.round((priceIncludeFee * 90) / 100)}
+                                        value={
+                                            type === "buying"
+                                                ? Math.round((priceIncludeFee * 90) / 100)
+                                                : Math.round((priceIncludeFee * 97) / 100)
+                                        }
                                         suffix="VND"
                                         thousandSeparator={true}
                                     />
@@ -420,7 +433,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                     </Typography>
                     <hr />
                     <Box mt={2}></Box>
-                    <FormLabel htmlFor="modal-price">Đề xuất giá</FormLabel>
+                    <FormLabel htmlFor="modal-price">Đề xuất giá (*) (VND)</FormLabel>
                     <Box mb={1}></Box>
                     <TextField
                         id="modal-price"
@@ -428,12 +441,17 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                         defaultValue={currentSellingRequest.price}
                         error={!isValidPrice}
                         value={currentSellingRequest.price}
-                        helperText="Giá phải lớn hơn 0 và bé/lớn hơn 30% giá đề nghị"
                         fullWidth
                         onChange={event => {
                             const parsedPrice = parseInt(event.target.value);
-                            const maxPrice = Math.round((priceIncludeFee * 110) / 100);
-                            const minPrice = Math.round((priceIncludeFee * 90) / 100);
+                            const maxPrice =
+                                type === "selling"
+                                    ? Math.round((priceIncludeFee * 110) / 100)
+                                    : Math.round((priceIncludeFee * 103) / 100);
+                            const minPrice =
+                                type === "buying"
+                                    ? Math.round((priceIncludeFee * 90) / 100)
+                                    : Math.round((priceIncludeFee * 97) / 100);
                             changeCurrentSubrequest({ ...currentSellingRequest, price: parsedPrice });
                             if (
                                 parsedPrice > maxPrice ||
@@ -453,7 +471,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                         }}
                     />
                     <Box mb={1}></Box>
-                    <FormLabel htmlFor="modal-quantity">Số lượng</FormLabel>
+                    <FormLabel htmlFor="modal-quantity">Số lượng (*)</FormLabel>
                     <Box mb={2}></Box>
                     <TextField
                         id="modal-quantity"
@@ -517,7 +535,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                     <FormLabel
                         children={
                             <Typography>
-                                {type === "selling" ? "Thời gian giao hàng" : "Thời gian đóng gói sản phẩm"}
+                                {type === "selling" ? "Thời gian giao hàng" : "Thời gian nhận hàng"}
                             </Typography>
                         }
                     />
@@ -538,9 +556,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                     </Box>
                     <FormLabel
                         children={
-                            <Typography>
-                                {type === "buying" ? "Nhận hàng và đóng gói tại(*)" : "Nhận hàng tại(*)"}
-                            </Typography>
+                            <Typography>{type === "buying" ? "Giao hàng đến(*)" : "Nhận hàng tại(*)"}</Typography>
                         }
                     />
                     <Box mt={2} mb={2} />
@@ -559,6 +575,7 @@ const RequestModal = ({ type, submitType }: RequestModalProps) => {
                             {renderTransactionAddressSelector()}
                         </Select>
                     </FormControl>
+                    <Box mt={2} />
                     <Button
                         variant="contained"
                         color="info"

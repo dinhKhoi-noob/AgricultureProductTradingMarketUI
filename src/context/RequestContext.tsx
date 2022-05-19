@@ -1479,6 +1479,13 @@ const RequestContextProvider = ({ children }: RequestProps) => {
                 });
             }
         } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                dispatch({
+                    type: "loadSearchResult",
+                    payload: [],
+                });
+                return;
+            }
             handleError(error);
         }
     };

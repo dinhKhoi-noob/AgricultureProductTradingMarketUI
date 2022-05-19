@@ -1,31 +1,9 @@
 /* eslint-disable react/no-children-prop */
-import {
-    Box,
-    Chip,
-    FormControl,
-    FormLabel,
-    InputLabel,
-    MenuItem,
-    Select,
-    SelectChangeEvent,
-    TextField,
-    Typography,
-} from "@mui/material";
-import React, { ReactNode, useContext, useEffect, useState } from "react";
+import { Box, FormLabel, TextField, Typography } from "@mui/material";
+import React, { useContext, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import {
-    InterestItemValueInitializer,
-    ProductTypeContext,
-    ProductTypePropertyInitializer,
-} from "../../context/ProductTypeContext";
 
 const AdditionalInformation = () => {
-    const [interestValue, setInterestValue] = useState<InterestItemValueInitializer>({
-        id: "default",
-        title: "default",
-    });
-    const { categoryList, interestList, getCategoryList, changeInterestList, removeInterestItem } =
-        useContext(ProductTypeContext);
     const {
         getCityNameApi,
         renderAddressSelector,
@@ -41,38 +19,8 @@ const AdditionalInformation = () => {
     const { phone } = currentUser;
     useEffect(() => {
         getCityNameApi();
-        getCategoryList();
     }, []);
 
-    const renderCategoryList = (): ReactNode => {
-        return categoryList.map((category: ProductTypePropertyInitializer) => {
-            const { id, title } = category;
-            return (
-                <MenuItem key={id} value={`${id}_${title.replaceAll(" ", "--")}`}>
-                    {title}
-                </MenuItem>
-            );
-        });
-    };
-
-    const selectCategory = (event: SelectChangeEvent) => {
-        const value = event.target.value;
-        if (value !== "default_default") {
-            const valueArray = value.split("_");
-            const title = valueArray[1].replaceAll("--", " ");
-            const id = valueArray[0];
-            const currentInterestValue = {
-                title,
-                id,
-            };
-            setInterestValue(currentInterestValue);
-            changeInterestList(currentInterestValue);
-        }
-    };
-
-    const handleDeleteInterestItem = (id: string) => {
-        removeInterestItem(id);
-    };
     return (
         <>
             <FormLabel htmlFor="register-phone" children={<Typography>Số điện thoại</Typography>} />
@@ -122,32 +70,6 @@ const AdditionalInformation = () => {
                     changeAddressLineOne(event, "level");
                 }}
             />
-            <Typography>Bạn quan tâm đến ?</Typography>
-            <Box mt={2} mb={2}></Box>
-            <FormControl fullWidth>
-                <InputLabel id="interest-selector">Danh mục</InputLabel>
-                <Select
-                    labelId="interest-selector"
-                    id="interest-selector-select"
-                    value={`${interestValue.id}_${interestValue.title.replaceAll(" ", "--")}`}
-                    onChange={(event: SelectChangeEvent) => selectCategory(event)}
-                    defaultValue="default_default"
-                >
-                    <MenuItem value="default_default">-- Chọn danh mục --</MenuItem>
-                    {renderCategoryList()}
-                </Select>
-            </FormControl>
-            <Box mt={2} mb={2} />
-            {interestList.map((item, index) => {
-                return (
-                    <Chip
-                        key={index}
-                        label={item.title}
-                        variant="outlined"
-                        onDelete={() => handleDeleteInterestItem(item.id)}
-                    />
-                );
-            })}
         </>
     );
 };

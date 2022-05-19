@@ -257,7 +257,7 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                             border="2px dotted"
                         >
                             <Typography variant="caption" fontStyle="italic">
-                                (Chọn nhiều nhất 4 ảnh)
+                                (Chọn ảnh)
                             </Typography>
                             <RiImageAddFill fontSize={100} opacity={0.4} />
                         </Box>
@@ -315,7 +315,7 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                         value={productName}
                     />
                     <Box mt={2} mb={2} />
-                    <FormLabel htmlFor="product-price" children={<Typography>Giá đề nghị(*)</Typography>} />
+                    <FormLabel htmlFor="product-price" children={<Typography>Giá đề nghị (*) (VND)</Typography>} />
                     <TextField
                         id="product-price"
                         type="number"
@@ -363,7 +363,7 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                                         <br />
                                         7% cho yêu cầu với tổng giá trị từ 500.000VND đến 1.000.000VND
                                         <br />
-                                        6% cho yêu cầu với tổng giá trị từ 1.000.000VND đến 5.000.000
+                                        6% cho yêu cầu với tổng giá trị từ 1.000.000VND đến 5.000.000VND
                                         <br />
                                         5% cho yêu cầu với tổng giá trị từ 5.000.000VND trở đi
                                     </Typography>
@@ -381,10 +381,15 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                                 thousandSeparator={true}
                                 style={{ fontSize: "20px" }}
                                 suffix="VND"
+                                displayType="text"
                             ></NumberFormat>
                         </Box>
                         <Box mt={1} mb={1}>
-                            <Typography>Tổng giá trị ước tính theo giá đề nghị:</Typography>
+                            <Typography>
+                                {type === "buying"
+                                    ? "Tổng tiền phải trả ước tính của yêu cầu:"
+                                    : "Tổng giá trị ước tính của yêu cầu:"}
+                            </Typography>
                             <NumberFormat
                                 displayType="text"
                                 value={Math.round(quantity * price * (1 + fee / 100))}
@@ -394,7 +399,11 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                             ></NumberFormat>
                         </Box>
                         <Box mt={1} mb={1}>
-                            <Typography>Thực nhận ước tính theo giá đề nghị:</Typography>
+                            <Typography>
+                                {type === "buying"
+                                    ? "Tổng giá trị ước tính của yêu cầu"
+                                    : "Thực nhận ước tính của yêu cầu:"}
+                            </Typography>
                             <NumberFormat
                                 displayType="text"
                                 value={quantity * price}
@@ -423,13 +432,18 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                                 pb={0}
                                 style={{ opacity: 0.6 }}
                             >
-                                Giá đề nghị đã bao gồm phí + 10%
+                                {type === "selling"
+                                    ? "Giá đề nghị đã bao gồm phí + 10%"
+                                    : "Giá đề nghị đã bao gồm phí + 3%"}
                             </Typography>
                             <NumberFormat
                                 displayType="text"
                                 value={
-                                    Math.round((quantity * price * (1 + fee / 100)) / quantity) +
-                                    Math.round(((quantity * price * (1 + fee / 100)) / quantity / 100) * 10)
+                                    type === "selling"
+                                        ? Math.round((quantity * price * (1 + fee / 100)) / quantity) +
+                                          Math.round(((quantity * price * (1 + fee / 100)) / quantity / 100) * 10)
+                                        : Math.round((quantity * price * (1 + fee / 100)) / quantity) +
+                                          Math.round(((quantity * price * (1 + fee / 100)) / quantity / 100) * 3)
                                 }
                                 style={{ fontSize: "20px" }}
                                 thousandSeparator={true}
@@ -446,13 +460,18 @@ const AddNewRequestModal = ({ type, submitType }: AddNewRequestModalProps) => {
                                 pb={0}
                                 style={{ opacity: 0.6 }}
                             >
-                                Giá đề nghị đã bao gồm phí - 10%
+                                {type === "buying"
+                                    ? "Giá đề nghị đã bao gồm phí - 10%"
+                                    : "Giá đề nghị đã bao gồm phí - 3%"}
                             </Typography>
                             <NumberFormat
                                 displayType="text"
                                 value={
-                                    Math.round((quantity * price * (1 + fee / 100)) / quantity) -
-                                    Math.round(((quantity * price * (1 + fee / 100)) / quantity / 100) * 10)
+                                    type === "buying"
+                                        ? Math.round((quantity * price * (1 + fee / 100)) / quantity) -
+                                          Math.round(((quantity * price * (1 + fee / 100)) / quantity / 100) * 10)
+                                        : Math.round((quantity * price * (1 + fee / 100)) / quantity) -
+                                          Math.round(((quantity * price * (1 + fee / 100)) / quantity / 100) * 3)
                                 }
                                 style={{ fontSize: "20px" }}
                                 thousandSeparator={true}

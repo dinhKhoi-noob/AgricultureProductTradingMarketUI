@@ -1,4 +1,9 @@
-import { UserInfomationInitializer, WarningFieldName, WarningStatusType } from "../context/AuthContext";
+import {
+    UserInfomationInitializer,
+    UserInformationValue,
+    WarningFieldName,
+    WarningStatusType,
+} from "../context/AuthContext";
 
 export interface UserAddressValue {
     id: string;
@@ -6,8 +11,8 @@ export interface UserAddressValue {
 }
 
 export interface AuthReducerAction {
-    type: WarningFieldName | "role" | "info" | "loadAddressList";
-    payload: boolean | string | UserInfomationInitializer | UserAddressValue[];
+    type: WarningFieldName | "role" | "info" | "loadAddressList" | "loadUsers";
+    payload: boolean | string | UserInfomationInitializer | UserAddressValue[] | UserInformationValue[];
 }
 
 export interface AuthReducerState {
@@ -15,6 +20,7 @@ export interface AuthReducerState {
     addressList: UserAddressValue[];
     userRole: string;
     userInfo: UserInfomationInitializer;
+    users: UserInformationValue[];
 }
 
 export const authReducer = (state: AuthReducerState, action: AuthReducerAction) => {
@@ -106,6 +112,11 @@ export const authReducer = (state: AuthReducerState, action: AuthReducerAction) 
             return {
                 ...state,
                 addressList: payload as UserAddressValue[],
+            };
+        case "loadUsers":
+            return {
+                ...state,
+                users: payload as UserInformationValue[],
             };
         default:
             return state;

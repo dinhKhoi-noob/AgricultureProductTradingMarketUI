@@ -8,7 +8,7 @@ import ConfirmationModal from "../../src/components/layouts/ConfirmationModal";
 import { AuthContext, UserInformationValue } from "../../src/context/AuthContext";
 import { LayoutContext } from "../../src/context/LayoutContext";
 
-const Manager = () => {
+const Shipper = () => {
     const formatDateString = "dd/MM/yyyy HH:mm";
     const { users, loadUsers, changeIsToggleOnCreateUserModal, changeCurrentUserId } = useContext(AuthContext);
     const { changeConfirmationModalValues } = useContext(LayoutContext);
@@ -82,7 +82,7 @@ const Manager = () => {
     ];
 
     useEffect(() => {
-        loadUsers("1234567892");
+        loadUsers("1234567894");
         return () => {
             setInactiveUser([]);
             setActiveUser([]);
@@ -136,7 +136,7 @@ const Manager = () => {
 
     return (
         <Box p={6}>
-            <CreateUserModal role="manager" />
+            <CreateUserModal role="shipper" />
             <ConfirmationModal />
             <Typography textAlign="center" marginTop={3} marginBottom={3} variant="h4">
                 Tài khoản đang được sử dụng
@@ -160,7 +160,7 @@ const Manager = () => {
                 autoHeight
                 onCellClick={row => {
                     if (row.field === "inactive") {
-                        changeCurrentUserId(row.id.toString(), "1234567892");
+                        changeCurrentUserId(row.id.toString(), "1234567894");
                         changeConfirmationModalValues({
                             isToggle: true,
                             title: "Bạn chắc chắn muốn vô hiệu hoá tài khoản người dùng này?",
@@ -193,7 +193,7 @@ const Manager = () => {
                 autoHeight
                 onCellClick={row => {
                     if (row.field === "active") {
-                        changeCurrentUserId(row.id.toString(), "1234567892");
+                        changeCurrentUserId(row.id.toString(), "1234567894");
                         changeConfirmationModalValues({
                             isToggle: true,
                             title: "Bạn chắc chắn muốn tái kích hoạt tài khoản người dùng này?",
@@ -219,4 +219,4 @@ const Manager = () => {
     );
 };
 
-export default Manager;
+export default Shipper;

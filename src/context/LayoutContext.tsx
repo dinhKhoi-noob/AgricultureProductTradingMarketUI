@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { createContext, ReactNode, useState, useReducer } from "react";
+import React, { createContext, ReactNode, useState, useReducer, ReactElement, MutableRefObject } from "react";
 import { SnackbarOrigin, useMediaQuery, useTheme } from "@mui/material";
 import { layoutReducer } from "../reducer/layoutReducer";
 import socket from "../socket";
@@ -8,7 +8,16 @@ export type SnackbarType = "error" | "info" | "success" | "warning";
 
 export type ProductTypeConfirmationType = "deleteProductType" | "createProductType" | "editProductType";
 export type ProductConfirmationType = "createProduct" | "editProduct" | "deleteProduct";
-export type UserConfirmationType = "logout" | "editProfile" | "changePassword";
+export type UserConfirmationType =
+    | "logout"
+    | "editProfile"
+    | "changePassword"
+    | "createCustomer"
+    | "createPackingStaff"
+    | "createManager"
+    | "createShipper"
+    | "activeUser"
+    | "inactiveUser";
 export type RequestConfirmationType =
     | "newBuyingRequest"
     | "newSellingRequest"
@@ -37,7 +46,8 @@ export type OrderConfirmationType =
     | "changeToPackaged"
     | "changeToDelivering"
     | "changeToSuccess"
-    | "changeToConfirmed";
+    | "ratingRequest"
+    | "ratingSubrequest";
 
 interface LayoutContextProviderProps {
     children: ReactNode;
@@ -48,6 +58,12 @@ interface SnackbarValuesProps {
     type: SnackbarType;
     isToggle: boolean;
     link?: string;
+}
+
+export interface DialAction {
+    icon: ReactElement;
+    title: string;
+    ref: MutableRefObject<HTMLInputElement | null>;
 }
 
 interface ConfirmationModalValuesInitializer {
@@ -75,6 +91,7 @@ interface LayoutContextDefault {
     confirmationModalValue: ConfirmationModalValuesInitializer;
     onSellingPage: boolean;
     haveNewNotification: boolean;
+    isTogglePreviewImage: boolean;
     notifications: any[];
     postNotification: (content: string, requestId: string, id: string, username: string, type: string) => void;
     changeNotificationList: (notifications: any[]) => void;
@@ -88,6 +105,7 @@ interface LayoutContextDefault {
     changeLoadingStatus: (status: boolean) => void;
     changeConfirmationModalValues: (value: ConfirmationModalValuesInitializer) => void;
     changeOnSellingPageStatus: (status: boolean) => void;
+    changeIsTogglePreviewImage: (status?: boolean) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextDefault>({
@@ -108,6 +126,7 @@ export const LayoutContext = createContext<LayoutContextDefault>({
     },
     onSellingPage: false,
     haveNewNotification: false,
+    isTogglePreviewImage: false,
     notifications: [],
     postNotification: () => null,
     changeNotificationList: () => null,
@@ -121,6 +140,7 @@ export const LayoutContext = createContext<LayoutContextDefault>({
     changeLoadingStatus: () => null,
     changeConfirmationModalValues: () => null,
     changeOnSellingPageStatus: () => null,
+    changeIsTogglePreviewImage: () => null,
 });
 
 const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
@@ -148,9 +168,8 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         title: "",
         type: "deleteProductType",
     });
-
     const [notifications, setNotifications] = useState<any[]>([]);
-
+    const [isTogglePreviewImage, setIsTogglePreviewImage] = useState(false);
     const postNotification = (content: string, requestId: string, id: string, username: string, type: string) => {
         setNotifications([...notifications, { content, username }]);
         switch (type) {
@@ -195,6 +214,15 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         setSnackbarPosition(position);
     };
 
+    const changeIsTogglePreviewImage = (status?: boolean) => {
+        if (status === undefined) {
+            console.log(1);
+            setIsTogglePreviewImage(!isTogglePreviewImage);
+            return;
+        }
+        setIsTogglePreviewImage(status);
+    };
+
     const changeSnackbarValues = (values: SnackbarValuesProps) => {
         console.log(values);
         const { content, type, isToggle } = values;
@@ -224,6 +252,7 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         onSellingPage: layoutState.onSellingPage,
         haveNewNotification,
         notifications,
+        isTogglePreviewImage,
         changeNotificationList,
         postNotification,
         loadNotifications,
@@ -236,6 +265,7 @@ const LayoutContextProvider = ({ children }: LayoutContextProviderProps) => {
         changeLoadingStatus,
         changeConfirmationModalValues,
         changeOnSellingPageStatus,
+        changeIsTogglePreviewImage,
     };
     return <LayoutContext.Provider value={layoutContextData}>{children}</LayoutContext.Provider>;
 };

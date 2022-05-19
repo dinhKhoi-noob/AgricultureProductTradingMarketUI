@@ -14,7 +14,15 @@ import { OrderContext } from "../../context/OrderContext";
 const ConfirmationModal = () => {
     const cookie = new Cookies();
     const router = useRouter();
-    const { userInfo, userAddress, currentUser, updateAdditionalInformation, addNewAddress } = useContext(AuthContext);
+    const {
+        userInfo,
+        userAddress,
+        currentUser,
+        updateAdditionalInformation,
+        addNewAddress,
+        changeUserActiveStatus,
+        createUser,
+    } = useContext(AuthContext);
     const { confirmationModalValue, changeConfirmationModalValues, changeLoadingStatus, changeSnackbarValues } =
         useContext(LayoutContext);
     const {
@@ -49,7 +57,7 @@ const ConfirmationModal = () => {
         changeSubrequestStatus,
     } = useContext(RequestContext);
 
-    const { changeOrderStatus } = useContext(OrderContext);
+    const { changeOrderStatus, postRating } = useContext(OrderContext);
 
     const { isToggle, type, title } = confirmationModalValue;
 
@@ -59,6 +67,28 @@ const ConfirmationModal = () => {
             localStorage.removeItem("user");
         }
         router.push("/authentication/login");
+    };
+
+    const handleCreateUser = (role: string) => {
+        const { city, district, ward, street, level, cityCode, districtCode, wardCode } = userAddress;
+        const { email, password, phone, username } = currentUser;
+        const address =
+            level +
+            ", " +
+            street +
+            ", " +
+            ward +
+            ", " +
+            district +
+            ", " +
+            city +
+            "!^!" +
+            cityCode +
+            "&" +
+            districtCode +
+            "&" +
+            wardCode;
+        createUser({ address, email, password, phone, username }, role);
     };
 
     const handleEditProfile = async (id: string) => {
@@ -232,6 +262,11 @@ const ConfirmationModal = () => {
         changeRequestStatus(status, type);
     };
 
+    const handleConfirmOrder = (id: string, type: string) => {
+        changeOrderStatus("confirmed", id);
+        postRating(id, type);
+    };
+
     const handleAcceptBtn = async (event: SyntheticEvent) => {
         event.preventDefault();
         const { id } = userInfo;
@@ -271,6 +306,24 @@ const ConfirmationModal = () => {
                 break;
             case "editProfile":
                 handleEditProfile(id);
+                break;
+            case "createCustomer":
+                handleCreateUser("1234567890");
+                break;
+            case "createManager":
+                handleCreateUser("1234567892");
+                break;
+            case "createPackingStaff":
+                handleCreateUser("1234567893");
+                break;
+            case "createShipper":
+                handleCreateUser("1234567894");
+                break;
+            case "activeUser":
+                changeUserActiveStatus(true);
+                break;
+            case "inactiveUser":
+                changeUserActiveStatus(false);
                 break;
             case "newBuyingRequest":
                 handleAddNewRequest(id, "buying");
@@ -348,8 +401,11 @@ const ConfirmationModal = () => {
             case "changeToSuccess":
                 changeOrderStatus("success", id);
                 break;
-            case "changeToConfirmed":
-                changeOrderStatus("confirmed", id);
+            case "ratingRequest":
+                handleConfirmOrder(id, "root");
+                break;
+            case "ratingSubrequest":
+                handleConfirmOrder(id, "component");
                 break;
             default:
                 return;
